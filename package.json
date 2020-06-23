@@ -1,0 +1,20 @@
+{
+  "name": "shopping-mall",
+  "version": "1.0.0",
+  "description": "shopping mall web application",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moonheekim0118/shopping-mall.git"
+  },
+  "author": "moonhee kim",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/moonheekim0118/shopping-mall/issues"
+  },
+  "homepage": "https://github.com/moonheekim0118/shopping-mall#readme"
+}
