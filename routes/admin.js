@@ -5,14 +5,14 @@ const AdminController= require('../Controllers/admin');
 
 router.get('/products', AdminController.getProducts);
 
-router.get('/add',AdminController.getAddProduct);
+router.get('/add-product',AdminController.getAddProduct);
 
-router.post('/add-item',AdminController.postAddProduct);
+router.post('/add-product',AdminController.postAddProduct);
 
-router.get('/edit', AdminController.getEditProduct);
+router.get('/edit-product', AdminController.getEditProduct);
 
-router.post('/edit-item', AdminController.postEditProduct);
+router.post('/edit-product', AdminController.postEditProduct);
 
-router.post('/delete-item',AdminController.postDeleteProduct);
+router.post('/delete-product',AdminController.postDeleteProduct);
 
 module.exports=router;
