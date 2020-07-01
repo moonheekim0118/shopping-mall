@@ -17,6 +17,10 @@
                                 <% }); %>
                             </ul>
                         </li>
+                        <form action="/order-delete-item" method="POST">
+                            <input type="hidden" value="<%= order.id %>" name="productId">
+                            <button class="btn danger" type="submit">Delete</button>
+                        </form>
                     <% }); %>
                 </ul>
             <% } %>

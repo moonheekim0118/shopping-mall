@@ -138,3 +138,20 @@ exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가
     })
     .catch(err=>console.log(err));
 }
+
+// 특정 order 삭제하기 
+// 'many'이면..get 할때 뒤에 s를 붙여야한다.
+exports.postDeleteOrder=(req,res,next)=>{
+    // order에서 특정 아이템 삭제하기.
+    const orderId=req.body.productId; // order id 
+    req.user.getOrders() // Order가져오기 { } 형식 
+    .then(orders=>{ // { } 내에 있는 order들 하나씩 보기 
+        orders.forEach(order => { 
+            if(order.id == orderId) return order.destroy();
+        }); //해당 order의 id가 orderId와 같다면 삭제 
+    })
+    .then(result=>{
+        res.redirect('/orders');
+    })
+    .catch(err=>console.log(err));
+}
