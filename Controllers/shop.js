@@ -94,10 +94,27 @@ exports.getOrder=(req,res,next)=>{ // Order페이지 띄우기
     .catch(err=>console.log(err));
 }
 
+// 카트에서 product 삭제 
+exports.postDeleteCart=(req,res,next)=>{
+    const productId=req.body.productId;
+    // productId에 해당하는 product를 cart에서 삭제하기
+    req.user.getCart()
+    .then(cart=>{
+       return cart.getProducts({where:{id:productId}}); // 카트에서 productId의 product를 가져온다. 
+    })
+    .then(products=>{ 
+        let product= products[0];
+        return product.CartProduct.destroy();
+    })
+    .then(result=>{
+        res.redirect('/cart');
+    })
+    .catch(err=>console.log(err));
+}
 exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가 
     //Cart에 있는 Product모두 Order에 추가.
     //Cart에 에 있는 Product 비우기 
-    let fetchedCart; // 전역에서 접근가능핟로ㅗㄱ 
+    let fetchedCart; // 전역에서 접근가능하도록
     req.user.getCart() // 카트 불러내기 
     .then(cart=>{ 
         fetchedCart=cart;  
