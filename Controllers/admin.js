@@ -4,6 +4,7 @@ exports.getProducts=(req,res,next)=>{
     //req.user에 등록된 product만 보여준다.
     req.user.getProducts()
     .then(products=>{
+        console.log(products);
         res.render('admin/products',
         {
             products: products,
@@ -30,7 +31,7 @@ exports.postAddProduct=(req,res,next)=>{
     const imageUrl =req.body.imageUrl;
     const price = req.body.price;
     const description=req.body.description;
-    req.user.createProduct({
+    req.user.createProduct({ // 유저쪽에서 Product만들기 --> req.user.getProducts로 접근가능  
         title:title,
         imageUrl:imageUrl,
         price:price,

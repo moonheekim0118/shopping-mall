@@ -11,6 +11,8 @@ const User = require('./Models/user');
 const Product = require('./Models/product');
 const Cart = require('./Models/cart');
 const CartProduct=require('./Models/cartProduct');
+const Order = require('./Models/order');
+const OrderProduct=require('./Models/orderProduct');
 
 app.set('view engine', 'ejs');
 app.set('views', 'views'); // view engine 설정
@@ -55,8 +57,19 @@ Cart.belongsTo(User);
 Cart.belongsToMany(Product, {through:CartProduct});
 Product.belongsToMany(Cart, {through:CartProduct});
 
+// User- Order Association
+// One to Many relation 
+Order.belongsTo(User);
+User.hasMany(Order);
+
+// Product- Order Association
+// Many to Many relation 
+Order.belongsToMany(Product , {through:OrderProduct});
+Product.belongsToMany(Order , {through:OrderProduct});
+
 sequelize //{force:true}
 .sync()
+
 .then(result=>{
     return User.findByPk(1);
 })
@@ -67,7 +80,7 @@ sequelize //{force:true}
     else return Promise.resolve(user); 
 })
 .then(cart=>{
-    cart.createCart(); // 유저와함께 cart도 생성 
+    cart.createCart(); // 유저쪽에서 Cart만들기 --> req.user.getCart로 접근가능. 
     app.listen(3000);
 })
 .catch(err=>console.log(err));
