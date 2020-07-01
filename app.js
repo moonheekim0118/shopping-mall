@@ -9,6 +9,8 @@ const ShopRouter = require('./routes/shop');
 const sequelize = require('./util/database');
 const User = require('./Models/user');
 const Product = require('./Models/product');
+const Cart = require('./Models/cart');
+const CartProduct=require('./Models/cartProduct');
 
 app.set('view engine', 'ejs');
 app.set('views', 'views'); // view engine 설정
@@ -43,6 +45,15 @@ app.use(errorsController.get404error);
 Product.belongsTo(User,{ constraints: true, onDelete:'CASCADE' });
 User.hasMany(Product);
 
+// User- Cart Association
+// One to One relaiton 
+User.hasOne(Cart);
+Cart.belongsTo(User);
+
+//Cart- Product Association
+//Many to Many relation
+Cart.belongsToMany(Product, {through:CartProduct});
+Product.belongsToMany(Cart, {through:CartProduct});
 
 sequelize //{force:true}
 .sync()
@@ -55,7 +66,8 @@ sequelize //{force:true}
     }
     else return Promise.resolve(user); 
 })
-.then(result=>{
+.then(cart=>{
+    cart.createCart(); // 유저와함께 cart도 생성 
     app.listen(3000);
 })
 .catch(err=>console.log(err));
