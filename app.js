@@ -28,7 +28,7 @@ app.use((req,res,next)=>{
 
 //admin 라우트 연결
 app.use('/admin',AdminRouter);
-//app.use(ShopRouter);
+app.use(ShopRouter);
 app.use(errorsController.get404error);
 
 /* association */
@@ -42,6 +42,7 @@ app.use(errorsController.get404error);
 // one to many relation
 Product.belongsTo(User,{ constraints: true, onDelete:'CASCADE' });
 User.hasMany(Product);
+
 
 sequelize //{force:true}
 .sync()
