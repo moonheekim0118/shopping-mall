@@ -14,11 +14,6 @@ app.set('views', 'views'); // view engine 설정
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(express.static(path.join(__dirname,'public')));
 
-
-//admin 라우트 연결
-// app.use('/admin',AdminRouter);
-// app.use(ShopRouter);
-app.use(errorsController.get404error);
 app.use((req,res,next)=>{
     User.findById("5f095f794ad2413f8029df6e")
     .then(user=>{
@@ -27,6 +22,15 @@ app.use((req,res,next)=>{
     })
     .catch(err=>console.log(err));
 })
+
+//admin 라우트 연결
+app.use('/admin',AdminRouter);
+// app.use(ShopRouter);
+
+app.use(ShopRouter);
+
+app.use(errorsController.get404error);
+
 
 mongoose.connect("mongodb+srv://admin:admin@cluster0.9j2jo.mongodb.net/shop2?retryWrites=true&w=majority")
 .then(result=>{

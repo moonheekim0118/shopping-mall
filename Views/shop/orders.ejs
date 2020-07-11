@@ -8,21 +8,20 @@
                 <h1>Nothing there!</h1>
             <% } else { %>
                 <ul>
+                    <% let totalPrice=0 %>
                     <% orders.forEach(order => { %>
-                        <li>
-                            <h1># <%= order.id %></h1>
-                            <ul>
-                                <% order.Products.forEach(product => { %>
-                                    <li><%= product.title %> (<%= product.OrderProduct.quantity %>)</li>
-                                <% }); %>
-                            </ul>
-                        </li>
+                        <ul>
+                            <li><%= order.productId.title %> (<%= order.quantity %>)</li>
+                             <p>price: $ <%= order.productId.price%></p>
+                             <% totalPrice+=order.productId.price %>
+                        </ul>
                         <form action="/order-delete-item" method="POST">
-                            <input type="hidden" value="<%= order.id %>" name="productId">
+                            <input type="hidden" value="<%= order.productId.id %>" name="productId">
                             <button class="btn danger" type="submit">Delete</button>
                         </form>
                     <% }); %>
                 </ul>
+                <p> total Price is  $<%=totalPrice %></p>
             <% } %>
         </main>
         <%- include('../includes/end.ejs') %>
