@@ -2,17 +2,11 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const bodyParser= require('body-parser');
+const mongoose = require('mongoose');
 const errorsController= require('./Controllers/errors');
 const AdminRouter = require('./routes/admin');
 const ShopRouter = require('./routes/shop');
-
-const sequelize = require('./util/database');
 const User = require('./Models/user');
-const Product = require('./Models/product');
-const Cart = require('./Models/cart');
-const CartProduct=require('./Models/cartProduct');
-const Order = require('./Models/order');
-const OrderProduct=require('./Models/orderProduct');
 
 app.set('view engine', 'ejs');
 app.set('views', 'views'); // view engine 설정
@@ -20,67 +14,33 @@ app.set('views', 'views'); // view engine 설정
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(express.static(path.join(__dirname,'public')));
 
+
+//admin 라우트 연결
+// app.use('/admin',AdminRouter);
+// app.use(ShopRouter);
+app.use(errorsController.get404error);
 app.use((req,res,next)=>{
-    User.findByPk(1)
-    .then(admin=>{
-        req.user=admin;  // 등록된 admin 1 을 req.user에 저장함으로써 
-                        //전체 애플리케이션에서 접근 가능하도록 만든다. 
+    User.findById("5f095f794ad2413f8029df6e")
+    .then(user=>{
+        req.user=user; // 생성된 admin 유저 req에 등록해주기  
         next();
     })
     .catch(err=>console.log(err));
 })
 
-//admin 라우트 연결
-app.use('/admin',AdminRouter);
-app.use(ShopRouter);
-app.use(errorsController.get404error);
-
-/* association */
-//user-cart (one to one)
-//user-products( one to many ) 등록 
-//user-order (one to many ) 
-//cart-products (many to many)
-//order-products (many to many)
-
-// User- Product Association
-// one to many relation
-Product.belongsTo(User,{ constraints: true, onDelete:'CASCADE' });
-User.hasMany(Product);
-
-// User- Cart Association
-// One to One relaiton 
-User.hasOne(Cart);
-Cart.belongsTo(User);
-
-//Cart- Product Association
-//Many to Many relation
-Cart.belongsToMany(Product, {through:CartProduct});
-Product.belongsToMany(Cart, {through:CartProduct});
-
-// User- Order Association
-// One to Many relation 
-Order.belongsTo(User);
-User.hasMany(Order);
-
-// Product- Order Association
-// Many to Many relation 
-Order.belongsToMany(Product , {through:OrderProduct});
-Product.belongsToMany(Order , {through:OrderProduct});
-
-sequelize //{force:true}
-.sync()
-
+mongoose.connect("mongodb+srv://admin:admin@cluster0.9j2jo.mongodb.net/shop2?retryWrites=true&w=majority")
 .then(result=>{
-    return User.findByPk(1);
-})
-.then(user=>{
-    if(!user){ // 1번 유저가 없다면 
-        return User.create({name:'Admin1', email:'Admin@admin.com'});
-    }
-    else return Promise.resolve(user); 
-})
-.then(cart=>{
-    cart.createCart(); // 유저쪽에서 Cart만들기 --> req.user.getCart로 접근가능. 
+    User.findOne().
+    then(user=>{
+        if(!user){ // 유저가 하나도 없으면 새로 admin 유저 생성해준다.
+            const user= new User({
+                name:'Admin',
+                email:'admin@admin.com',
+                cart:{ items:[]}
+            });
+            user.save();
+        }
+    })
+    .catch(err=>console.log(err));
     app.listen(3000);
-})
-.catch(err=>console.log(err));
+}).catch(err=>console.log(err));

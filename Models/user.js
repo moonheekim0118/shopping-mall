@@ -1,22 +1,31 @@
-// usermodel;
-const Sequelize= require('sequelize');
-const sequelize = require('../util/database');
-// User Table 생성 
-const User = sequelize.define('User', {
-    id:{
-        type: Sequelize.INTEGER,
-        allowNull:false,
-        autoIncrement: true,
-        primaryKey:true
-    },
+const mongoose =require('mongoose');
+const Schema = mongoose.Schema;
+const Product = require('../Models/product');
+const Order = require('../Models/order');
+const userSchema= new Schema({
     name:{
-        type: Sequelize.STRING,
-        allowNull:false
+        type:String,
+        required:true
     },
     email:{
-        type:Sequelize.STRING,
-        allowNull:false
-    }
+        type:String,
+        required:true
+     },
+     cart:{
+        items:[
+            {
+                productId:{
+                    type:Schema.Types.ObjectId,
+                    ref:'Product',
+                    required:true
+                },
+                quantity:{
+                    type:Number,
+                    required:true
+                }
+            }
+        ] 
+     }
 });
 
-module.exports=User;
+module.exports= mongoose.model('User', userSchema);
