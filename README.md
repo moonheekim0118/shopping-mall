@@ -5,10 +5,12 @@ udemy node js complete guide 강의 실습을 통해 구현하는 쇼핑몰 웹�
 ---
 + MySql -> NoSql 데이터 베이스 변경 , 개인프로젝트이기 때문에 몽고DB가 더 적절하다고 판단함
 
-+ 수업에서는 한명의 User당 Order 스키마를 여러개 생성했는데 , 이럴경우 Order에 들어간 아이템들이 무의미하게 겹쳐질 수 있겠다 생각함, 따라서 한명의 User당 하나의 Order스키마만 갖고 Order에 들어갈 아이템 리스트를 Object Array로 변경
++ 수업에서는 한명의 User당 Order 데이터를 여러개 생성했는데, 이럴경우 Order에 들어간 아이템들이 무의미하게 겹쳐질 수 있겠다 생각함, 따라서 한명의 User당 하나의 Order데이터만 갖고 Order에 들어갈 아이템 리스트를 Object Array로 변경하여 Order 데이터에 Embeded함. <br>
+    *추후에 유저 한명 당 여러개의 Order를 생성해야하는 경우에는 이전 방식으로 다시 돌아가도록!*
 
-+ 기존의 Order에는 아이템의 모든 정보를 populate하여 저장했지만, 이 역시 Order에 들어갈 아이템이 많아지면 데이터베이스에 과부하가 올 수 있을 것이라 판단, 따라서 아이템의 ref인 Id값만 저장하고 getOrder 라우팅에서 populate를 이용해 해당 아이템의 정보를 추출하는 방향으로 바꿈
++ 기존의 Order에는 아이템의 정보를 Embeded 했지만, products와 order의 관계가 다대다(Many to Many) 관계라고 판단하여 Products를 참조(ref)하도록 함. 해당 Order데이터에는 product의 id만 저장하고, getOrder 라우팅에서 populate를 이용해 해당 아이템의 정보를 추출하는 방향으로 바꿈. 
 
++ *몽고 DB 스키마 설계를 더 공부하자!* 
 
 **변경 전 Order Model** <br>
 product에 해당 아이템의 모든 정보가 담기고 하나의 유저가 여러개의 Order 스키마를 가질 수 있다.
