@@ -40,18 +40,20 @@ exports.getProducts=(req,res,next)=>{
 }
 
 exports.getCart=(req,res,next)=>{
-    req.user.populate('cart.items.productId')
-    .execPopulate()
-    .then(user=>{
-        console.log(user);
-        const products = user.cart.items;
-        res.render('shop/cart', {
-            path:'/cart',
-            pageTitle:'my Cart',
-            products:products
+    req.user.renewCart().then(result=>{
+        req.user.populate('cart.items.productId')
+        .execPopulate()
+        .then(user=>{
+            console.log(user);
+            const products = user.cart.items;
+            res.render('shop/cart', {
+                path:'/cart',
+                pageTitle:'my Cart',
+                products:products
+            })
         })
-    })
-    .catch(err => console.log(err));
+        .catch(err => console.log(err));
+    });
 }
 
 exports.postAddToCart=(req,res,next)=>{
@@ -76,9 +78,14 @@ exports.postDeleteCart=(req,res,next)=>{
 }
 
 exports.getOrder=(req,res,next)=>{ // Order페이지 띄우기 
+    let foundorder ; 
     Order.findOne({'user.userId':req.user._id}) // findOne을 하지 않으면 배열 형태로 반환됨 한 유저당 하나의 order만을 생성함 
     .then(order=>{
-        order.populate('products.items.productId') // productId기준으로 product 정보 끌어오기 
+        foundorder=order;
+        return order.renewOrder();
+    })
+    .then(result=>{
+        foundorder.populate('products.items.productId') // productId기준으로 product 정보 끌어오기 
         .execPopulate()
         .then(order=>{
             const info = order.products.items;

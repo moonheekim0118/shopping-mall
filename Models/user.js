@@ -1,7 +1,6 @@
 const mongoose =require('mongoose');
 const Schema = mongoose.Schema;
 const Product = require('../Models/product');
-const Order = require('../Models/order');
 const userSchema= new Schema({
     name:{
         type:String,
@@ -62,5 +61,25 @@ userSchema.methods.clearCart=function(){
     this.cart.items=[];
     return this.save();
 }
+// amdin에서 삭제한 아이템이 cart에 남아있을 경우 cart 갱신
+userSchema.methods.renewCart=function(){
+    const productIds= this.cart.items.map(i=>{
+        return i.productId;
+    });
+    const updatedCartItems=[];
+   return Product.find({'_id':productIds})
+    .then(products=>{
+        if(Object.keys(products).length < Object.keys(this.cart.items).length){
+            for(p of products){
+                const qtity = this.cart.items.find(i=>{
+                    return i.productId.toString() === p._id.toString();
+                }).quantity;
+                if(qtity>0) updatedCartItems.push({productId: p._id, quantity:qtity});
+            }
+        }
+        this.cart.items=updatedCartItems;
+        return this.save();
+    }).catch(err=>console.log(err));
 
+}
 module.exports= mongoose.model('User', userSchema);

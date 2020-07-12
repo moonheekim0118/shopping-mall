@@ -67,4 +67,24 @@ OrderSchema.methods.removeOrder=function(product_id){ // order에서 특정 상�
     return this.save();
 }
 
+//admin에서 삭제한 상품이 order에 남아있을 경우 order 갱신 
+OrderSchema.methods.renewOrder=function(){
+    const productIds = this.products.items.map(i=>{
+        return i.productId;
+    });
+    const updatedOrderItems=[];
+    return Product.find({'_id':productIds})
+    .then(products=>{
+        if(Object.keys(products).length < Object.keys(this.products.items).length){ // length가 다르다면 
+            for( p of products){
+                const qtity = this.products.items.find(i=>{
+                    return i.productId.toString()===p._id.toString(); // id값이 같다면 
+                }).quantity; // quantity 추출 
+                if(qtity>0) updatedOrderItems.push({productId:p._id, quantity: qtity}); // quantity가 추출되었다면 
+            }
+        }
+        this.products.items=updatedOrderItems;
+        return this.save();
+    })
+}
 module.exports = mongoose.model('Order', OrderSchema);

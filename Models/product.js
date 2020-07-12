@@ -1,7 +1,5 @@
 const mongoose =require('mongoose');
 const Schema = mongoose.Schema;
-const Product = require('../Models/product');
-const Order = require('../Models/order');
 
 const ProductSchema = new Schema({
     title:{
