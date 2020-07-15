@@ -1,0 +1,26 @@
+<!--admin 에서 product 추가하는 부분 -->
+<%- include('../includes/head.ejs') %>
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <link rel="stylesheet" href="/css/forms.css">
+    <main>
+        <form class="product-form" action="/signUp" method="POST">
+            <div class="form-control">
+                <label for="email">email</label>
+                <input type="text" name="email" id="email">
+            </div>
+            <div class="form-control">
+                <label for="password">password</label>
+                <input type="password" name="password" id="password"> 
+            </div>
+            <div class="form-control">
+                <label for="Confirm Password">Confirm Password</label>
+                <input type="password" name="confirmPassword" id="confirmPassword">
+            </div>
+            <button class="btn" type="submit">signUp</button>
+        </form>
+    </main>
+
+<%- include('../includes/end.ejs') %>

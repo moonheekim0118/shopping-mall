@@ -6,33 +6,48 @@ const mongoose = require('mongoose');
 const errorsController= require('./Controllers/errors');
 const AdminRouter = require('./routes/admin');
 const ShopRouter = require('./routes/shop');
+const AuthRouter = require('./routes/auth');
 const User = require('./Models/user');
 
+const session = require('express-session');
+const MongoDBStore=require('connect-mongodb-session')(session);
+const MONGODB_URI=require('./database'); // db URI 
+const store = new MongoDBStore ({ // 연동할 db 설정 
+    uri : MONGODB_URI,
+    collection:'sessions'
+});
 app.set('view engine', 'ejs');
 app.set('views', 'views'); // view engine 설정
 
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(express.static(path.join(__dirname,'public')));
+app.use(session({secret:'my secret', resave:false, saveUninitialized:false, store:store})); // 세션 db 연동 
 
 app.use((req,res,next)=>{
-    User.findById("5f095f794ad2413f8029df6e")
-    .then(user=>{
-        req.user=user; // 생성된 admin 유저 req에 등록해주기  
-        next();
-    })
-    .catch(err=>console.log(err));
+   if(req.session.user){ // session.user가 저장되었다면 == 로그인 되었다면 
+       User.findOne(req.session.user._id) // 해당user찾기 
+       .then(user=>{
+           req.user = user; // req.user에 저장해서 전역에서 접근 가능하도록 
+           next();
+       })
+       .catch(err=>console.log(err));
+   }
+   else{
+       next();
+   }
 })
-
 //admin 라우트 연결
 app.use('/admin',AdminRouter);
 // app.use(ShopRouter);
 
 app.use(ShopRouter);
 
+app.use(AuthRouter);
+
 app.use(errorsController.get404error);
 
 
-mongoose.connect("mongodb+srv://admin:admin@cluster0.9j2jo.mongodb.net/shop2?retryWrites=true&w=majority")
+mongoose.connect(MONGODB_URI)
 .then(result=>{
     User.findOne().
     then(user=>{

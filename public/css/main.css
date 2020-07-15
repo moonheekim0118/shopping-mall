@@ -15,21 +15,22 @@ main {
   margin: auto;
 }
 
-.centered{
-  text-align: center;
-}
 form {
   display: inline;
 }
 
+.centered {
+  text-align: center;
+}
 
-.image{
+.image {
   height: 20rem;
 }
 
-.image img{
-  height: 20rem;
+.image img {
+  height: 100%;
 }
+
 .main-header {
   width: 100%;
   height: 3.5rem;
@@ -41,8 +42,10 @@ form {
 
 .main-header__nav {
   height: 100%;
-  display: none;
+  width: 100%;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .main-header__item-list {
@@ -57,14 +60,21 @@ form {
   padding: 0;
 }
 
-.main-header__item a {
+.main-header__item a,
+.main-header__item button {
+  font: inherit;
+  background: transparent;
+  border: none;
   text-decoration: none;
   color: white;
+  cursor: pointer;
 }
 
 .main-header__item a:hover,
 .main-header__item a:active,
-.main-header__item a.active {
+.main-header__item a.active,
+.main-header__item button:hover,
+.main-header__item button:active {
   color: #ffeb3b;
 }
 
@@ -196,7 +206,6 @@ form {
   background: white;
   border-radius: 3px;
   cursor: pointer;
-  margin-bottom: 20px;
 }
 
 .btn:hover,
@@ -205,6 +214,31 @@ form {
   color: white;
 }
 
+.btn.danger {
+  color: red;
+  border-color: red;
+}
+
+.btn.danger:hover,
+.btn.danger:active {
+  background: red;
+  color: white;
+}
+
+.user-message{
+  margin : auto;
+  width : 90%;
+  border: 1px solid darkcyan;
+  padding : 1rem;
+  border-radius: 3px;
+  background-color: darkgray;
+  text-align: center;
+}
+
+.user-message--err{
+  border-color: red;
+  background-color: salmon;
+}
 @media (min-width: 768px) {
   .main-header__nav {
     display: flex;
@@ -212,5 +246,8 @@ form {
 
   #side-menu-toggle {
     display: none;
+  }
+  .user-message{
+    width: 30rem;
   }
 }
