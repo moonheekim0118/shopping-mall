@@ -47,6 +47,9 @@ exports.getEditProduct=(req,res,next)=>{
     const productId=req.params.productId; // 파라미터로부터 파싱해온다 
     Product.findById(productId)
     .then(product=>{
+        if(product.userId.toString()!==req.user._id.toString()){
+            return res.redirect('/admin/products');
+        }
         res.render('admin/add-product', {
             pageTitle: 'EDIT PRODUCT',
             path: '/admin/add-product',
@@ -78,7 +81,7 @@ exports.postEditProduct=(req,res,next)=>{
 
 exports.postDeleteProduct=(req,res,next)=>{
     const id= req.body.prodId; // 삭제할 product의 id
-    Product.deleteOne({_id:id})
+    Product.deleteOne({_id:id, userId:req.user._id})
     .then(result=>{
         res.redirect('/admin/products');
     }).catch(err=>console.log(err));
