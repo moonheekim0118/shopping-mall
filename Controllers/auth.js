@@ -1,5 +1,42 @@
 const User =require('../Models/user');
 const bcrypt = require('bcryptjs');
+const api_info = require('../api_tokens');
+const nodemailer = require('nodemailer');
+const clientId=api_info.clientId;
+const clientSecret=api_info.clientSecret;
+const refreshToken=api_info.refreshToken;
+const accessToken=api_info.accessToken;
+const gmailAccount=api_info.gmailAccount;
+
+const sendMail = async(to , subject, html) => { // gmail api 사용 
+    const googleTransporter = await nodemailer.createTransport({
+        host:'smtp.gmail.com',
+        port: 465,
+        secure:true,
+        auth:{
+            type:'OAuth2',
+            user: gmailAccount,
+            clientId:clientId,
+            clientSecret: clientSecret,
+            refreshToken:refreshToken,
+            accessToken:accessToken,
+            expires:3600
+        }
+    }),
+    mailOptions = {
+        from: 'Amadoo,<Amadoo@amadoo.com>',
+        to,
+        subject,
+        html
+    }
+    try{
+        await googleTransporter.sendMail(mailOptions);
+        googleTransporter.close();
+        console.log(`mail have sent to ${ to }`);
+    } catch(err){
+        console.log(err);
+    }
+}
 
 exports.getLogin=(req,res,next)=>{
     res.render('auth/login', {
@@ -31,6 +68,11 @@ exports.postSignUp=(req,res,next)=>{
                 user.save()
                 .then(result=>{
                     res.redirect('/login');
+                    sendMail(email,'welcome to Amadoo!', 
+                    `<h1>Thank you for signing in our shopping mall 'AMADOO' </h1>
+                    <p> we hope you'll get bunch of great exprience in our shop</p>
+                    <p> if you have any troubles while shopping, please let us know by this email! </p>
+                    `);
                 })
             }).catch(err=>console.log(err));
         }
