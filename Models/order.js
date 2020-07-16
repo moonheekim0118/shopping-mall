@@ -28,10 +28,7 @@ const OrderSchema = new Schema({
             type:Schema.Types.ObjectId,
             ref:'User',
             required:true
-        },
-        name:{
-            type:String,
-            required:true}
+        }
     }
 });
 
@@ -82,8 +79,8 @@ OrderSchema.methods.renewOrder=function(){
                 }).quantity; // quantity 추출 
                 if(qtity>0) updatedOrderItems.push({productId:p._id, quantity: qtity}); // quantity가 추출되었다면 
             }
+            this.products.items=updatedOrderItems;
         }
-        this.products.items=updatedOrderItems;
         return this.save();
     })
 }

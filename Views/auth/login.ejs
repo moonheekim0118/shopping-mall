@@ -18,6 +18,10 @@
             <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
             <button class="btn" type="submit">login</button>
         </form>
+        <form class="product-form" action="/signUp" method="GET">
+            <p >Are you new to Amadoo?</p>
+            <button class="btn" type="submit">sign up now</button>
+        </form>
     </main>
 
 <%- include('../includes/end.ejs') %>

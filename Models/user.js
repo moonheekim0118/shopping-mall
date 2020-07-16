@@ -45,6 +45,7 @@ userSchema.methods.addToCart=function(product_id){
         updatedCartitems.push({productId:product_id, quantity:newQuantity});
     }
     this.cart.items=updatedCartitems;
+    console.log(this.cart.items);
     return this.save();
 }
 
@@ -76,8 +77,8 @@ userSchema.methods.renewCart=function(){
                 }).quantity;
                 if(qtity>0) updatedCartItems.push({productId: p._id, quantity:qtity});
             }
+            this.cart.items=updatedCartItems;
         }
-        this.cart.items=updatedCartItems;
         return this.save();
     }).catch(err=>console.log(err));
 

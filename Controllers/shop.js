@@ -1,5 +1,6 @@
 const Product = require('../Models/product');
 const Order = require('../Models/order');
+const product = require('../Models/product');
 exports.getIndex=(req,res,next)=>{
     Product.find()
     .then(products=>{
@@ -42,10 +43,10 @@ exports.getProducts=(req,res,next)=>{
 exports.getCart=(req,res,next)=>{
     if(req.user){ // 로그인 된 경우 
         req.user.renewCart().then(result=>{
+            console.log(result);
             req.user.populate('cart.items.productId')
             .execPopulate()
             .then(user=>{
-                console.log(user);
                 const products = user.cart.items;
                 res.render('shop/cart', {
                     path:'/cart',
@@ -66,13 +67,17 @@ exports.getCart=(req,res,next)=>{
 }
 
 exports.postAddToCart=(req,res,next)=>{
-    const productId= req.body.productId;
-    req.user.addToCart(productId)
-    .then(result=>{
-        console.log(result);
+    if(req.user){
+        const productId=req.body.productId;
+        req.user.addToCart(productId)
+       .then(result=>{
         res.redirect('/cart');
     })
     .catch(err=>console.log(err));
+    }
+    else{
+        res.redirect('/login');
+    }
 }
 
 // 카트에서 product 삭제 
@@ -89,38 +94,51 @@ exports.postDeleteCart=(req,res,next)=>{
 exports.getOrder=(req,res,next)=>{ // Order페이지 띄우기 
     // order가 없는 경우에도 renewOrder를 실행하면 null 에러가 뜬다.
     // 따라서 order가 있는 경우와 없는 경우를 나누어주었다. 
+    // 추후 refectoring 필요 
     if(req.user){
-        let items;
-        Order.findOne({'user.userId':req.user._id}) // findOne을 하지 않으면 배열 형태로 반환됨 한 유저당 하나의 order만을 생성함 
+        Order.findOne({'user.userId':req.user._id})
         .then(order=>{
-             if(order){ //if there is order  
-                return order.renewOrder(). // order renew 
-                then(result=>{
+            if(order){
+                order.renewOrder()
+                .then(order=>{
                     order.populate('products.items.productId')
                     .execPopulate()
                     .then(orderObject=>{
-                        items = orderObject.products.items; // 아이템에 order items 저장 
+                        const items = orderObject.products.items;
+                        res.render('shop/orders',{
+                            path:'/orders',
+                            pageTitle:'my Orders',
+                            orders:items
+                        })
                     })
+                    .catch(err=>console.log(err));
+                })
+                .catch(err=>console.log(err));
+            }
+            else{ // order가 없는 경우 
+                res.render('shop/orders',{
+                    path:'/orders',
+                    pageTitle:'my Orders',
+                    orders:[]
                 })
             }
-            else{ items=[]; } // items에 empty array 저장 
         })
-        .then(result=>{ // rendering 
-            res.render('shop/orders', {
-                pageTitle:'My Order',
-                path:'/orders',
-                orders:items
-            })
-        }).catch(err=>console.log(err));
+        .catch(err=>console.log(err));
     }
     else{
-        res.redirect('/login');
+        res.redirect('/login'); // 로그인 안되어있다면
     }
 }
 
 exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가 
     Order.findOne({'user.userId':req.user._id})
     .then(order=>{
+        if(!order){
+            order=new Order({ // 해당  user의 order가 없다면 생성해주기 
+                products: {items:[]},
+                user:{userId:req.user._id}
+            });
+        }
         order.addOrder(req.user._id)
         .then(result=>{
             req.user.clearCart(); // 카트 비우기 
@@ -133,9 +151,9 @@ exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가
 // 'many'이면..get 할때 뒤에 s를 붙여야한다.
 exports.postDeleteOrder=(req,res,next)=>{
     const product_id=req.body.productId;
-    Order.find({'user.userId':req.user._id})
+    Order.findOne({'user.userId':req.user._id})
     .then(order=>{
-        order[0].removeOrder(product_id)
+        order.removeOrder(product_id)
         .then(result=>{
             res.redirect('/orders');
         })
