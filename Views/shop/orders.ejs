@@ -18,6 +18,7 @@
                              <% totalPrice+=(order.productId.price*order.quantity) %>
                         </div>
                         <form action="/order-delete-item" method="POST">
+                            <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
                             <input type="hidden" value="<%= order.productId.id %>" name="productId">
                             <button class="btn danger" type="submit">Delete</button>
                         </form>

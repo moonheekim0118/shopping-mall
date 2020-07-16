@@ -87,23 +87,29 @@ exports.postDeleteCart=(req,res,next)=>{
 }
 
 exports.getOrder=(req,res,next)=>{ // Order페이지 띄우기 
+    // order가 없는 경우에도 renewOrder를 실행하면 null 에러가 뜬다.
+    // 따라서 order가 있는 경우와 없는 경우를 나누어주었다. 
     if(req.user){
-        let foundorder ; 
+        let items;
         Order.findOne({'user.userId':req.user._id}) // findOne을 하지 않으면 배열 형태로 반환됨 한 유저당 하나의 order만을 생성함 
         .then(order=>{
-            foundorder=order;
-            return order.renewOrder();
-        })
-        .then(result=>{
-            foundorder.populate('products.items.productId') // productId기준으로 product 정보 끌어오기 
-            .execPopulate()
-            .then(order=>{
-                const info = order.products.items;
-                res.render('shop/orders', {
-                    pageTitle:'My Order',
-                    path:'/orders',
-                    orders:info
+             if(order){ //if there is order  
+                return order.renewOrder(). // order renew 
+                then(result=>{
+                    order.populate('products.items.productId')
+                    .execPopulate()
+                    .then(orderObject=>{
+                        items = orderObject.products.items; // 아이템에 order items 저장 
+                    })
                 })
+            }
+            else{ items=[]; } // items에 empty array 저장 
+        })
+        .then(result=>{ // rendering 
+            res.render('shop/orders', {
+                pageTitle:'My Order',
+                path:'/orders',
+                orders:items
             })
         }).catch(err=>console.log(err));
     }

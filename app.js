@@ -8,6 +8,8 @@ const AdminRouter = require('./routes/admin');
 const ShopRouter = require('./routes/shop');
 const AuthRouter = require('./routes/auth');
 const User = require('./Models/user');
+const csrf = require('csurf');
+const csrfProtection = csrf();
 
 const session = require('express-session');
 const MongoDBStore=require('connect-mongodb-session')(session);
@@ -23,6 +25,7 @@ app.use(bodyParser.urlencoded({extended:false}));
 app.use(express.static(path.join(__dirname,'public')));
 app.use(session({secret:'my secret', resave:false, saveUninitialized:false, store:store})); // 세션 db 연동 
 
+app.use(csrfProtection); // csrf 
 app.use((req,res,next)=>{
    if(req.session.user){ // session.user가 저장되었다면 == 로그인 되었다면 
        User.findOne(req.session.user._id) // 해당user찾기 
@@ -39,6 +42,7 @@ app.use((req,res,next)=>{
 
 app.use((req,res,next)=>{
    res.locals.isAuthenticated = req.session.isLoggedIn;
+   res.locals.csrfToken=req.csrfToken();
    next();
 });
 //admin 라우트 연결
