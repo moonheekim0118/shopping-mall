@@ -2,6 +2,7 @@ const User =require('../Models/user');
 const bcrypt = require('bcryptjs');
 const api_info = require('../api_tokens');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const clientId=api_info.clientId;
 const clientSecret=api_info.clientSecret;
 const refreshToken=api_info.refreshToken;
@@ -114,4 +115,82 @@ exports.postLogin=(req,res,next)=>{
 exports.getLogout=(req,res,next)=>{ // 로그아웃 
     req.session.destroy();
     res.redirect('/');
+}
+
+exports.getNewPassword=(req,res,next)=>{ // password 재설정
+    res.render('auth/new-password', {
+        path:'/new-password',
+        pageTitle:'resseting password'
+    });
+}
+
+exports.postNewPassword=(req,res,next)=>{ // password 재설정 post
+    // 토큰 값을 포함한 path를 email 로 발송해준후 리다이렉트.
+    const email = req.body.email;
+    crypto.randomBytes(32, (err,Buffer)=>{ // 토큰 생성 
+        if(err){
+            console.log(err);
+            return res.redirect('/new-password');
+        }
+        const token = Buffer.toString('hex');
+        User.findOne({email:email}) // 유저 찾기 
+        .then(user=>{
+            if(!user){
+                return res.redirect('/reset');
+            }
+            user.resetToken=token; // 해당 유저에 토큰 및 만기일 저장 
+            user.resetTokenExpiration= Date.now()+3600000;
+            return user.save();
+        })
+        .then(result=>{
+            res.redirect('/');
+            return sendMail(email, 'Reset your password', `
+            follow <a href="http://localhost:3000/new-password/${token}">this link</a> to reset your password `);
+        })
+        .catch(err=>console.log(err));
+    })
+}
+
+exports.getResetPage=(req,res,next)=>{
+    const token = req.params.token;
+    User.findOne({resetToken:token, resetTokenExpiration:{$gt: Date.now()}})
+    .then(user=>{
+        if(!user){ res.redirect('/');}
+        else{
+            res.render('auth/reset-password', {
+                path:'/reset-password',
+                pageTitle:'reset password',
+                userId:user._id,
+                resetToken:token
+            })
+        }
+    })
+    .catch(err=>console.log(err));
+}
+
+exports.postResetPage=(req,res,next)=>{
+    const token  = req.body.token;
+    const userId= req.body.userId;
+    const password =req.body.password;
+    let foundUser;
+    User.findOne({_id:userId, resetToken:token, resetTokenExpiration:{$gt: Date.now()}})
+    .then(user=>{
+        if(!user){ // user 존재하지 않음 
+            res.redirect('/');
+        }
+        else{
+            foundUser = user;
+            return bcrypt.hash(password,12)
+            .then(hashedPassword=>{
+                foundUser.password=hashedPassword;
+                foundUser.resetToken=undefined;
+                foundUser.resetTokenExpiration=undefined;
+                return foundUser.save();
+            })
+        }
+    })
+    .then(result=>{
+        res.redirect('/login');
+    })
+    .catch(err=>console.log(err));
 }
