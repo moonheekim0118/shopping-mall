@@ -40,20 +40,29 @@ exports.getProducts=(req,res,next)=>{
 }
 
 exports.getCart=(req,res,next)=>{
-    req.user.renewCart().then(result=>{
-        req.user.populate('cart.items.productId')
-        .execPopulate()
-        .then(user=>{
-            console.log(user);
-            const products = user.cart.items;
-            res.render('shop/cart', {
-                path:'/cart',
-                pageTitle:'my Cart',
-                products:products
+    if(req.user){ // 로그인 된 경우 
+        req.user.renewCart().then(result=>{
+            req.user.populate('cart.items.productId')
+            .execPopulate()
+            .then(user=>{
+                console.log(user);
+                const products = user.cart.items;
+                res.render('shop/cart', {
+                    path:'/cart',
+                    pageTitle:'my Cart',
+                    products:products
+                })
             })
+            .catch(err => console.log(err));
+        });
+    }
+    else{ //로그인 되지 않은 경우
+        res.render('shop/cart', {
+            path:'/cart',
+            pageTitle: 'my Cart',
+            products:[]
         })
-        .catch(err => console.log(err));
-    });
+    }
 }
 
 exports.postAddToCart=(req,res,next)=>{
@@ -78,24 +87,29 @@ exports.postDeleteCart=(req,res,next)=>{
 }
 
 exports.getOrder=(req,res,next)=>{ // Order페이지 띄우기 
-    let foundorder ; 
-    Order.findOne({'user.userId':req.user._id}) // findOne을 하지 않으면 배열 형태로 반환됨 한 유저당 하나의 order만을 생성함 
-    .then(order=>{
-        foundorder=order;
-        return order.renewOrder();
-    })
-    .then(result=>{
-        foundorder.populate('products.items.productId') // productId기준으로 product 정보 끌어오기 
-        .execPopulate()
+    if(req.user){
+        let foundorder ; 
+        Order.findOne({'user.userId':req.user._id}) // findOne을 하지 않으면 배열 형태로 반환됨 한 유저당 하나의 order만을 생성함 
         .then(order=>{
-            const info = order.products.items;
-            res.render('shop/orders', {
-                pageTitle:'My Order',
-                path:'/orders',
-                orders:info
-            })
+            foundorder=order;
+            return order.renewOrder();
         })
-    }).catch(err=>console.log(err));
+        .then(result=>{
+            foundorder.populate('products.items.productId') // productId기준으로 product 정보 끌어오기 
+            .execPopulate()
+            .then(order=>{
+                const info = order.products.items;
+                res.render('shop/orders', {
+                    pageTitle:'My Order',
+                    path:'/orders',
+                    orders:info
+                })
+            })
+        }).catch(err=>console.log(err));
+    }
+    else{
+        res.redirect('/login');
+    }
 }
 
 exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가 
@@ -107,26 +121,6 @@ exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가
             res.redirect('/orders');
         })
     }).catch(err=>console.log(err));
-    // req.user
-    // .execPopulate()
-    // .then(user=>{
-    //     const products = user.cart.items.map(i=>{
-    //         return {quantity:i.quantity, productId:i.productId};
-    //     });
-    //     const order = new Order({
-    //         user:{
-    //             userId: req.user._id,
-    //             name:req.user.name
-    //         },
-    //         products:{ items:[]}
-    //     });
-    //     order.products.items= products;
-    //     return order.save();
-    // })
-    // .then(result=>{
-    //     req.user.clearCart(); // 카트 비우기 
-    //     res.redirect('/');
-    // }).catch(err=>console.log(err));
 }
 
 // 특정 order 삭제하기 

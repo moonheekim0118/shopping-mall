@@ -36,6 +36,11 @@ app.use((req,res,next)=>{
        next();
    }
 })
+
+app.use((req,res,next)=>{
+   res.locals.isAuthenticated = req.session.isLoggedIn;
+   next();
+});
 //admin 라우트 연결
 app.use('/admin',AdminRouter);
 // app.use(ShopRouter);

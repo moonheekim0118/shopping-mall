@@ -42,18 +42,28 @@ exports.postSignUp=(req,res,next)=>{
 }
 exports.postLogin=(req,res,next)=>{
     const email = req.body.email;
-    User.find({email:email})
+    const password=req.body.password;
+    User.findOne({email:email})
     .then(user=>{
         if(!user){ //유저 아이디 맞지 않는 경우 
-            res.redirect('/');
+            res.redirect('/login');
         }
         else{
-            req.session.isLoggedIn= true; // 로그인 되었음 
-            req.session.user = user; // 유저 정보 저장 
-            req.session.save(err=>{ // 세션 저장 
-                console.log(err);
-                res.redirect('/');
+            bcrypt.compare(password,user.password) 
+            .then(doMatch=>{
+                if(!doMatch){ // 비밀번호가 맞지 않는 경우 
+                   res.redirect('/login'); 
+                }
+                else{
+                    req.session.isLoggedIn= true; // 로그인 되었음 
+                    req.session.user = user; // 유저 정보 저장 
+                    req.session.save(err=>{ // 세션 저장 
+                        console.log(err);
+                        res.redirect('/'); // password 체크하는 flow 추가해줘야함 
+                    })
+                }
             })
+            .catch(err=>console.log(err));
         }
     }).catch(err=>console.log(err));
 }

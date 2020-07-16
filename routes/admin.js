@@ -1,18 +1,19 @@
 const express =require('express');
 const router =express.Router();
 const AdminController= require('../Controllers/admin');
+const AuthRouting = require('../middleware/is-Auth');
 // /admin 으로 시작하는 path 처리
 
-router.get('/products', AdminController.getProducts);
+router.get('/products', AuthRouting, AdminController.getProducts);
 
-router.get('/add-product',AdminController.getAddProduct);
+router.get('/add-product', AuthRouting, AdminController.getAddProduct);
 
-router.post('/add-product',AdminController.postAddProduct);
+router.post('/add-product', AuthRouting, AdminController.postAddProduct);
 
-router.get('/edit-product/:productId', AdminController.getEditProduct);
+router.get('/edit-product/:productId', AuthRouting, AdminController.getEditProduct);
 
-router.post('/edit-product', AdminController.postEditProduct);
+router.post('/edit-product',  AuthRouting,AdminController.postEditProduct);
 
-router.post('/delete-product',AdminController.postDeleteProduct);
+router.post('/delete-product', AuthRouting,AdminController.postDeleteProduct);
 
 module.exports=router;

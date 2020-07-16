@@ -1,5 +1,4 @@
 const Product = require('../Models/product');
-
 exports.getProducts=(req,res,next)=>{
     //admin으로부터 등록된 products만 보여준다.
     Product.find({userId:req.user._id})
