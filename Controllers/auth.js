@@ -8,6 +8,12 @@ const clientSecret=api_info.clientSecret;
 const refreshToken=api_info.refreshToken;
 const accessToken=api_info.accessToken;
 const gmailAccount=api_info.gmailAccount;
+const { validationResult } = require('express-validator/check');
+
+const welcomeMessage=  `<h1>Thank you for signing in our shopping mall 'AMADOO' </h1>
+<p> we hope you'll get bunch of great exprience in our shop</p>
+<p> if you have any troubles while shopping, please let us know by this email! </p>
+`
 
 const sendMail = async(to , subject, html) => { // gmail api 사용 
     const googleTransporter = await nodemailer.createTransport({
@@ -42,73 +48,98 @@ const sendMail = async(to , subject, html) => { // gmail api 사용
 exports.getLogin=(req,res,next)=>{
     res.render('auth/login', {
         path:'/login',
-        pageTitle:'login'
+        pageTitle:'login',
+        ErrorMessage:'',
+        oldInput:{email:'', password:''},
+        validationError:[]
     });
 }
 
 exports.getSignUp=(req,res,next)=>{
     res.render('auth/signUp', {
         path:'/signUp',
-        pageTitle:'sign Up'
+        pageTitle:'sign Up',
+        ErrorMessage:'',
+        oldInput : {email: '', password: ''},
+        validationError: []
     })
 }
 exports.postSignUp=(req,res,next)=>{
     const email = req.body.email;
     const password = req.body.password;
-    // 해당 email 이 존재하면 fail
-    User.findOne({email:email})
-    .then(user=>{
-        if(!user){ // 이메일 사용 가능 
-            return bcrypt.hash(password,12)
-            .then(hashedPassword=>{ // hashed password로 변경
-                const user = new User({
-                    email:email,
-                    password:hashedPassword,
-                    cart:{items:[]}
-                }); // 새로운 User 데이터 저장 
-                user.save()
-                .then(result=>{
-                    res.redirect('/login');
-                    sendMail(email,'welcome to Amadoo!', 
-                    `<h1>Thank you for signing in our shopping mall 'AMADOO' </h1>
-                    <p> we hope you'll get bunch of great exprience in our shop</p>
-                    <p> if you have any troubles while shopping, please let us know by this email! </p>
-                    `);
-                })
-            }).catch(err=>console.log(err));
-        }
-        else{
-            res.redirect('/signUp');
-        }
-    })
-    .catch(err=>console.log(err));
+    const error = validationResult(req);
+    if(!error.isEmpty()){
+        return res.status(422).render('auth/signUp',{
+            path:'/signUp',
+            pageTitle:'sign up',
+            ErrorMessage : error.array()[0].msg,
+            oldInput : {email: email, password: password},
+            validationError: error.array()
+        });
+    }
+
+    bcrypt.hash(password,12)
+    .then(hashedPassword=>{ // hashed password로 변경
+        const user = new User({
+            email:email,
+            password:hashedPassword,
+            cart:{items:[]}
+        }); // 새로운 User 데이터 저장 
+        user.save()
+        .then(result=>{
+            res.redirect('/login');
+            // sendMail(email,'welcome to Amadoo!', 
+            // welcomeMessage);
+        })
+    }).catch(err=>console.log(err));
 }
 exports.postLogin=(req,res,next)=>{
     const email = req.body.email;
     const password=req.body.password;
+    const error = validationResult(req);
+    if(!error.isEmpty()){
+        return res.render('auth/login',{
+            path:'/login',
+            pageTitle:'login',
+            ErrorMessage : error.array()[0].msg,
+            oldInput : {email: email, password: password},
+            validationError: error.array()
+        });
+        console.log(error.array()[0].msg);
+    }
     User.findOne({email:email})
     .then(user=>{
-        if(!user){ //유저 아이디 맞지 않는 경우 
-            res.redirect('/login');
-        }
-        else{
-            bcrypt.compare(password,user.password) 
-            .then(doMatch=>{
-                if(!doMatch){ // 비밀번호가 맞지 않는 경우 
-                   res.redirect('/login'); 
-                }
-                else{
-                    req.session.isLoggedIn= true; // 로그인 되었음 
-                    req.session.user = user; // 유저 정보 저장 
-                    req.session.save(err=>{ // 세션 저장 
-                        console.log(err);
-                        res.redirect('/'); // password 체크하는 flow 추가해줘야함 
-                    })
-                }
+        if(!user){
+            return res.render('auth/login', {
+                path:'/login',
+                pageTitle:'login',
+                ErrorMessage : '입력하신 email은 존재하지 않습니다.',
+                oldInput : {email: email, password: password},
+                validationError:[{param:'email'}]
             })
-            .catch(err=>console.log(err));
         }
-    }).catch(err=>console.log(err));
+        bcrypt.compare(password,user.password)
+        .then(doMatch=>{
+            if(!doMatch){
+                res.render('auth/login', {
+                    path:'/login',
+                    pageTitle:'login',
+                    ErrorMessage : '비밀번호가 일치하지 않습니다.',
+                    oldInput : {email: email, password: password},
+                    validationError:[{param:'password'}]
+                });
+            }
+            else{
+                req.session.isLoggedIn= true; // 로그인 되었음 
+                req.session.user = user; // 유저 정보 저장 
+                req.session.save(err=>{ // 세션 저장 
+                console.log(err);
+                res.redirect('/'); // password 체크하는 flow 추가해줘야함 
+                })
+            }
+        })
+    })
+    .catch(err=>console.log(err));
 }
 
 
