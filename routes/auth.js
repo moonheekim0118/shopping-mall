@@ -34,6 +34,7 @@ router.post('/signUp', [
     body('confirmPassword').custom((value,{req})=>{
         if(value !== req.body.password){
            throw new Error('비밀번호가 일치하지 않습니다.');
+        // return Promise.reject('비밀번호가 일치하지 않습니다.')
         }
         else return true;
     }).trim()

@@ -98,7 +98,7 @@ exports.postLogin=(req,res,next)=>{
     const password=req.body.password;
     const error = validationResult(req);
     if(!error.isEmpty()){
-        return res.render('auth/login',{
+        return res.status(422).render('auth/login',{
             path:'/login',
             pageTitle:'login',
             ErrorMessage : error.array()[0].msg,

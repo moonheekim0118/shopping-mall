@@ -1,4 +1,6 @@
 const Product = require('../Models/product');
+const { validationResult } = require('express-validator/check');
+
 exports.getProducts=(req,res,next)=>{
     //admin으로부터 등록된 products만 보여준다.
     Product.find({userId:req.user._id})
@@ -19,7 +21,10 @@ exports.getAddProduct=(req,res,next)=>{
     res.render('admin/add-product', {
         pageTitle: 'ADD NEW PRODUCT',
         path: '/admin/add-product',
-        editing:false
+        editing:false,
+        isError:false,
+        ErrorMessage:'',
+        validationError:[]
     });
 };
 
@@ -30,6 +35,18 @@ exports.postAddProduct=(req,res,next)=>{
     const imageUrl =req.body.imageUrl;
     const price = req.body.price;
     const description=req.body.description;
+    const error = validationResult(req);
+    if(!error.isEmpty()){
+        return res.status(422).render('admin/add-product',{
+            path:'/add-product',
+            pageTitle:'add product',
+            ErrorMessage : error.array()[0].msg,
+            validationError: error.array(),
+            editing:false,
+            isError:true,
+            product:{title:title,imageUrl:imageUrl,price:price,description:description}
+        })
+    }
     const product = new Product({
         title:title,
         price:price,
@@ -54,7 +71,10 @@ exports.getEditProduct=(req,res,next)=>{
             pageTitle: 'EDIT PRODUCT',
             path: '/admin/add-product',
             editing:true,
-            product: product //해당 product의 정보를 add-product에 보낸다. 
+            isError:false,
+            product: product, //해당 product의 정보를 add-product에 보낸다. 
+            ErrorMessage:'',
+            validationError:[]
         });
     })
     .catch(err=>console.log(err));
