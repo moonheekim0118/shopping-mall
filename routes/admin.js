@@ -12,8 +12,7 @@ router.get('/add-product', AuthRouting, AdminController.getAddProduct);
 router.post('/add-product', AuthRouting,[
 body('title').isString().withMessage('제목을 올바르게 입력해주세요.')
 .isLength({min:2,max:15}).withMessage('제목은 2글자 이상, 15글자 이하여야 합니다.').trim()
-,
-body('imageUrl').isURL().withMessage('올바른 형식의 이미지 주소를 입력해주세요.').trim()
+// body('imageUrl').isURL().withMessage('올바른 형식의 이미지 주소를 입력해주세요.').trim()
 ,
 body('price').isNumeric().withMessage('숫자만 입력해주세요')
 ,
@@ -27,8 +26,6 @@ router.post('/edit-product',  AuthRouting,
 [
 body('title').isString().withMessage('제목을 올바르게 입력해주세요.')
 .isLength({min:2,max:15}).withMessage('제목은 2글자 이상, 15글자 이하여야 합니다.').trim()
-,
-body('imageUrl').isURL().withMessage('올바른 형식의 이미지 주소를 입력해주세요.').trim()
 ,
 body('price').isNumeric().withMessage('숫자만 입력해주세요')
 ,
