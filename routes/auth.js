@@ -26,6 +26,10 @@ router.post('/signUp', [
             if(user){
                return Promise.reject('이미 존재하는 이메일 입니다.'); 
             };
+        }).catch(err=>{
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
         });
     }).normalizeEmail(),
     
