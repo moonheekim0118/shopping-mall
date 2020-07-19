@@ -51,7 +51,7 @@ exports.postAddProduct=(req,res,next)=>{
         title:title,
         price:price,
         description:description,
-        imgUrl:imageUrl,
+        imageUrl:imageUrl,
         userId:req.user._id
     });
     product.save()
@@ -69,7 +69,7 @@ exports.getEditProduct=(req,res,next)=>{
         }
         res.render('admin/add-product', {
             pageTitle: 'EDIT PRODUCT',
-            path: '/admin/add-product',
+            path: '/admin/products',
             editing:true,
             isError:false,
             product: product, //해당 product의 정보를 add-product에 보낸다. 
@@ -86,11 +86,22 @@ exports.postEditProduct=(req,res,next)=>{
     const price = req.body.price;
     const description=req.body.description;
     const productId=req.body.productId;
-
-    Product.findById(productId)
+    const error = validationResult(req);
+    if(!error.isEmpty()){
+        return res.status(422).render('admin/add-product',{
+            pageTitle: 'EDIT PRODUCT',
+            path: '/admin/products',
+            editing:true,
+            isError:true,
+            product:{title:title, imageUrl:imageUrl, price:price, description:description , _id:productId},
+            ErrorMessage: error.array()[0].msg,
+            validationError:error.array()
+        });
+    }
+    Product.findOne({"_id":productId})
     .then(product=>{
         product.title=title;
-        product.imageUrl=imageUrl;
+        product.imageUrl=imageUrl; 
         product.description=description;
         product.price=price;
         product.save();
