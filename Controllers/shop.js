@@ -37,7 +37,11 @@ exports.getProducts=(req,res,next)=>{
             prods: products
         });
     })
-    .catch(err =>console.log(err));
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 }
 
 exports.getCart=(req,res,next)=>{
@@ -54,7 +58,11 @@ exports.getCart=(req,res,next)=>{
                     products:products
                 })
             })
-            .catch(err => console.log(err));
+            .catch(err=>{
+                const error = new Error(err);
+                error.httpStatusCode = 500;
+                return next(error);
+            });
         });
     }
     else{ //로그인 되지 않은 경우
@@ -73,7 +81,11 @@ exports.postAddToCart=(req,res,next)=>{
        .then(result=>{
         res.redirect('/cart');
     })
-    .catch(err=>console.log(err));
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
     }
     else{
         res.redirect('/login');
@@ -87,7 +99,11 @@ exports.postDeleteCart=(req,res,next)=>{
     .then(result=>{
         res.redirect('/cart');
     })
-    .catch(err=>console.log(err));
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
     
 }
 
@@ -123,7 +139,11 @@ exports.getOrder=(req,res,next)=>{ // Order페이지 띄우기
                 })
             }
         })
-        .catch(err=>console.log(err));
+        .catch(err=>{
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
     }
     else{
         res.redirect('/login'); // 로그인 안되어있다면
@@ -144,7 +164,11 @@ exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가
             req.user.clearCart(); // 카트 비우기 
             res.redirect('/orders');
         })
-    }).catch(err=>console.log(err));
+    }).catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 }
 
 // 특정 order 삭제하기 
@@ -157,5 +181,9 @@ exports.postDeleteOrder=(req,res,next)=>{
         .then(result=>{
             res.redirect('/orders');
         })
-    }).catch(err=>console.log(err));
+    }).catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 }

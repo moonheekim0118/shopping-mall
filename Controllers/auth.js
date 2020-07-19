@@ -91,7 +91,11 @@ exports.postSignUp=(req,res,next)=>{
             // sendMail(email,'welcome to Amadoo!', 
             // welcomeMessage);
         })
-    }).catch(err=>console.log(err));
+    }).catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 }
 exports.postLogin=(req,res,next)=>{
     const email = req.body.email;
@@ -105,7 +109,6 @@ exports.postLogin=(req,res,next)=>{
             oldInput : {email: email, password: password},
             validationError: error.array()
         });
-        console.log(error.array()[0].msg);
     }
     User.findOne({email:email})
     .then(user=>{
@@ -139,7 +142,11 @@ exports.postLogin=(req,res,next)=>{
             }
         })
     })
-    .catch(err=>console.log(err));
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 }
 
 
@@ -178,7 +185,11 @@ exports.postNewPassword=(req,res,next)=>{ // password 재설정 post
             return sendMail(email, 'Reset your password', `
             follow <a href="http://localhost:3000/new-password/${token}">this link</a> to reset your password `);
         })
-        .catch(err=>console.log(err));
+        .catch(err=>{
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
     })
 }
 
@@ -196,7 +207,11 @@ exports.getResetPage=(req,res,next)=>{
             })
         }
     })
-    .catch(err=>console.log(err));
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 }
 
 exports.postResetPage=(req,res,next)=>{
@@ -223,5 +238,9 @@ exports.postResetPage=(req,res,next)=>{
     .then(result=>{
         res.redirect('/login');
     })
-    .catch(err=>console.log(err));
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 }

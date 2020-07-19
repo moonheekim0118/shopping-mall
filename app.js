@@ -33,7 +33,11 @@ app.use((req,res,next)=>{
            req.user = user; // req.user에 저장해서 전역에서 접근 가능하도록 
            next();
        })
-       .catch(err=>console.log(err));
+       .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
    }
    else{
        next();
@@ -47,28 +51,25 @@ app.use((req,res,next)=>{
 });
 //admin 라우트 연결
 app.use('/admin',AdminRouter);
-// app.use(ShopRouter);
+
 
 app.use(ShopRouter);
 
 app.use(AuthRouter);
 
+app.use('/500',errorsController.get500error);
+
 app.use(errorsController.get404error);
 
+app.use((error,req,res,next)=>{
+    res.redirect('/500');
+})
 
 mongoose.connect(MONGODB_URI)
 .then(result=>{
-    User.findOne().
-    then(user=>{
-        if(!user){ // 유저가 하나도 없으면 새로 admin 유저 생성해준다.
-            const user= new User({
-                name:'Admin',
-                email:'admin@admin.com',
-                cart:{ items:[]}
-            });
-            user.save();
-        }
-    })
-    .catch(err=>console.log(err));
     app.listen(3000);
-}).catch(err=>console.log(err));
+}).catch(err=>{
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+})

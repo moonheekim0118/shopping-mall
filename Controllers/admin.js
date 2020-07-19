@@ -1,6 +1,5 @@
 const Product = require('../Models/product');
 const { validationResult } = require('express-validator/check');
-
 exports.getProducts=(req,res,next)=>{
     //admin으로부터 등록된 products만 보여준다.
     Product.find({userId:req.user._id})
@@ -13,7 +12,11 @@ exports.getProducts=(req,res,next)=>{
             path:'/admin/products',
         });
     })
-    .catch();
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 };
 
 exports.getAddProduct=(req,res,next)=>{
@@ -57,7 +60,11 @@ exports.postAddProduct=(req,res,next)=>{
     product.save()
     .then(result=>{
         res.redirect('/');
-    }).catch(err=>console.log(err));
+    }).catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 };
 
 exports.getEditProduct=(req,res,next)=>{
@@ -76,8 +83,12 @@ exports.getEditProduct=(req,res,next)=>{
             ErrorMessage:'',
             validationError:[]
         });
-    })
-    .catch(err=>console.log(err));
+    }).catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
+
 };
 
 exports.postEditProduct=(req,res,next)=>{ 
@@ -107,7 +118,11 @@ exports.postEditProduct=(req,res,next)=>{
         product.save();
         res.redirect('/admin/products');
     })
-    .catch(err=>console.log(err));
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 };
 
 exports.postDeleteProduct=(req,res,next)=>{
@@ -115,6 +130,10 @@ exports.postDeleteProduct=(req,res,next)=>{
     Product.deleteOne({_id:id, userId:req.user._id})
     .then(result=>{
         res.redirect('/admin/products');
-    }).catch(err=>console.log(err));
+    }).catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 };
 
