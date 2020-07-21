@@ -1,0 +1,19 @@
+<section class="pagination">
+    <!-- 1페이지를 나타내는 버튼구현 -->
+    <% if(hasPreviousPage) {%> <a href="?page=<%=previousPage%>">previous Page</a> 
+    <%if(currentPage!==1 && previousPage!==1) {%> <a href="/">1</a>... <%}%>
+    <a href="?page=<%=previousPage%>"><%=previousPage%></a> 
+
+    <% } else {%> previous Page<% } %>
+    <!-- 이전 페이지가 있다면 PreviousPage 버튼(활성화), 이전 페이지를 나타내는 버튼 구현 -->
+    <a href="" class="active"><%=currentPage%></a>
+    <% if(hasNextPage) {%>
+        <a href="?page=<%=nextPage%>"><%=nextPage%></a>  
+        <%if(nextPage!=lastPage){%>
+            ...  
+            <%=lastPage%>
+        <% } %>
+        <a href="?page=<%=nextPage%>">next Page</a> <% } else {%> next Page <% } %>
+    <!-- 다음 페이지가 있다면 NextPage버튼(활성화)과 다음 페이지를 나타내는 버튼 구현 -->
+    <!-- 마지막 페이지 나타내는 글자만 구현 -->
+</section>
