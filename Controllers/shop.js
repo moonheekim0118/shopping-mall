@@ -1,11 +1,9 @@
 const Product = require('../Models/product');
 const Order = require('../Models/order');
 const product = require('../Models/product');
-const POST_PER_PAGE = 2;
-exports.getIndex=(req,res,next)=>{
-    let pageNum;
-    if(!req.query.page){ pageNum=1; } // 쿼리로 넘어오지 않음 -> 1페이지 
-    else{  pageNum=+req.query.page; }
+const POST_PER_PAGE = 1;
+
+const paginationModule = (pageNum,res,renderingPath, title, path)=>{
     let totalItems;    
     Product.find().countDocuments() // 전체 prouct개수 세기
     .then(itemsNum=>{ 
@@ -15,9 +13,9 @@ exports.getIndex=(req,res,next)=>{
         .limit(POST_PER_PAGE) // 현재 페이지에 와야할 product 수 
     })
     .then(products=>{
-        res.render('shop/index', {
-            pageTitle: 'welcome to Amadoo',
-            path:'/',
+        res.render(renderingPath, {
+            pageTitle: title,
+            path:path,
             prods: products,
             currentPage:pageNum, // 현재 페이지 
             hasNextPage: POST_PER_PAGE*pageNum < totalItems, // 다음 페이지가 있는가? 
@@ -29,9 +27,15 @@ exports.getIndex=(req,res,next)=>{
         })
     .catch(err =>console.log(err));
 }
+exports.getIndex=(req,res,next)=>{
+    let pageNum=1;
+    if(req.query.page){  pageNum=+req.query.page; }
+    paginationModule(pageNum,res,'shop/index', 'welcome to Amadoo', '/');
+}
 
 exports.getProductDetail=(req,res,next)=>{
     const productId= req.params.productId;
+    const page = req.query.page;
     console.log(productId);
     Product.findById(productId)
     .then(product=>{
@@ -39,46 +43,17 @@ exports.getProductDetail=(req,res,next)=>{
         {
             product:product,
             pageTitle:'DETAIL',
-            path:'/admin/products'
+            path:'/products',
+            page:page
         })
     })
     .catch(err=>console.log(err));
 }
 
 exports.getProducts=(req,res,next)=>{
-    let pageNum;
-    if(!req.query.page){
-        pageNum=1;
-    }
-    else{
-        pageNum=+req.query.page;
-    }
-    let totalItems;
-    Product.find().countDocuments()
-    .then(itemsNum=>{
-        totalItems=itemsNum;
-        return Product.find().
-        skip((pageNum-1)*POST_PER_PAGE)
-        .limit(POST_PER_PAGE)
-    })
-    .then(products=>{
-        res.render('shop/product-list',{
-            pageTitle:'products',
-            path:'/products',
-            prods: products,
-            currentPage:pageNum,
-            hasNextPage: POST_PER_PAGE*pageNum < totalItems,
-            hasPreviousPage: pageNum>=2,
-            nextPage: pageNum+1,
-            previousPage:pageNum-1,
-            lastPage: Math.ceil(totalItems/POST_PER_PAGE)
-        });
-    })
-    .catch(err=>{
-        const error = new Error(err);
-        error.httpStatusCode = 500;
-        return next(error);
-    });
+    let pageNum=1;
+    if(req.query.page){  pageNum=+req.query.page; }
+    paginationModule(pageNum,res,'shop/product-list','product list','/products');
 }
 
 exports.getCart=(req,res,next)=>{

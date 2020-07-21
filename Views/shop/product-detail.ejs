@@ -6,14 +6,11 @@
             <h1><%=product.title%></h1>
             <hr>
             <div>
-                <img src="<%= product.imageUrl%>" alt="<%=product.title%>">
+                <img src="/<%= product.imageUrl%>" alt="<%=product.title%>">
             </div>
             <h2>$ <%=product.price%></h2>
-            <p><%=product.description%></productInfo></p>
+            <p><%=product.description%></p>
             <%- include('../includes/add-to-cart.ejs')%>
-            <form action="/products" method="GET">
-                <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
-                <button class="btn" type="submit">Back to the list</button>
-            </form>
+            <a href="/products/?page=<%=page%>" class="btn">back to list</a>
         </main>
         <%- include('../includes/end.ejs') %>
