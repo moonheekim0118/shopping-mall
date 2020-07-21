@@ -66,12 +66,15 @@ app.use((req,res,next)=>{
 
 app.use((req,res,next)=>{
    res.locals.isAuthenticated = req.session.isLoggedIn;
+   res.locals.isSeller=undefined;
+   if(req.user){
+    res.locals.isSeller = req.user.Seller;
+   }
    res.locals.csrfToken=req.csrfToken();
    next();
 });
 //admin 라우트 연결
 app.use('/admin',AdminRouter);
-
 
 app.use(ShopRouter);
 
@@ -91,5 +94,6 @@ mongoose.connect(MONGODB_URI)
 }).catch(err=>{
     const error = new Error(err);
     error.httpStatusCode = 500;
+    console.log(err);
     return next(error);
 })

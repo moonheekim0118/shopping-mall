@@ -54,4 +54,10 @@ router.get('/new-password',authController.getNewPassword); // reset 할것인지
 
 router.post('/new-password',authController.postNewPassword); // 이메일 발송 
 
+router.get('/sell',authController.getSell);
+
+router.post('/sell',authController.postSell);
+
+router.post('/sell-delete',authController.postSellDelete);
+
 module.exports=router;

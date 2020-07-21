@@ -5,11 +5,11 @@ const AuthRouting = require('../middleware/is-Auth');
 const { body } = require('express-validator/check');
 // /admin 으로 시작하는 path 처리
 
-router.get('/products', AuthRouting, AdminController.getProducts);
+router.get('/products', AuthRouting.sellerCheck, AdminController.getProducts);
 
-router.get('/add-product', AuthRouting, AdminController.getAddProduct);
+router.get('/add-product', AuthRouting.sellerCheck, AdminController.getAddProduct);
 
-router.post('/add-product', AuthRouting,[
+router.post('/add-product', AuthRouting.sellerCheck,[
 body('title').isString().withMessage('제목을 올바르게 입력해주세요.')
 .isLength({min:2,max:15}).withMessage('제목은 2글자 이상, 15글자 이하여야 합니다.').trim()
 // body('imageUrl').isURL().withMessage('올바른 형식의 이미지 주소를 입력해주세요.').trim()
@@ -20,9 +20,9 @@ body('description').isLength({min:5, max:100}).withMessage('상품 설명은 최
 ] ,
 AdminController.postAddProduct);
 
-router.get('/edit-product/:productId', AuthRouting, AdminController.getEditProduct);
+router.get('/edit-product/:productId', AuthRouting.sellerCheck, AdminController.getEditProduct);
 
-router.post('/edit-product',  AuthRouting,
+router.post('/edit-product',  AuthRouting.sellerCheck,
 [
 body('title').isString().withMessage('제목을 올바르게 입력해주세요.')
 .isLength({min:2,max:15}).withMessage('제목은 2글자 이상, 15글자 이하여야 합니다.').trim()
@@ -33,6 +33,6 @@ body('description').isLength({min:5, max:100}).withMessage('상품 설명은 최
 ] ,
 AdminController.postEditProduct);
 
-router.post('/delete-product', AuthRouting,AdminController.postDeleteProduct);
+router.post('/delete-product', AuthRouting.sellerCheck,AdminController.postDeleteProduct);
 
 module.exports=router;

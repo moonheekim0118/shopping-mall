@@ -123,43 +123,38 @@ exports.getOrder=(req,res,next)=>{ // Order페이지 띄우기
     // order가 없는 경우에도 renewOrder를 실행하면 null 에러가 뜬다.
     // 따라서 order가 있는 경우와 없는 경우를 나누어주었다. 
     // 추후 refectoring 필요 
-    if(req.user){
-        Order.findOne({'user.userId':req.user._id})
-        .then(order=>{
-            if(order){
-                order.renewOrder()
-                .then(order=>{
-                    order.populate('products.items.productId')
-                    .execPopulate()
-                    .then(orderObject=>{
-                        const items = orderObject.products.items;
-                        res.render('shop/orders',{
-                            path:'/orders',
-                            pageTitle:'my Orders',
-                            orders:items
-                        })
+    Order.findOne({'user.userId':req.user._id})
+    .then(order=>{
+        if(order){
+            order.renewOrder()
+            .then(order=>{
+                order.populate('products.items.productId')
+                .execPopulate()
+                .then(orderObject=>{
+                    const items = orderObject.products.items;
+                    res.render('shop/orders',{
+                        path:'/orders',
+                        pageTitle:'my Orders',
+                        orders:items
                     })
-                    .catch(err=>console.log(err));
                 })
                 .catch(err=>console.log(err));
-            }
-            else{ // order가 없는 경우 
-                res.render('shop/orders',{
-                    path:'/orders',
-                    pageTitle:'my Orders',
-                    orders:[]
-                })
-            }
-        })
-        .catch(err=>{
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
-        });
-    }
-    else{
-        res.redirect('/login'); // 로그인 안되어있다면
-    }
+            })
+            .catch(err=>console.log(err));
+        }
+        else{ // order가 없는 경우 
+            res.render('shop/orders',{
+                path:'/orders',
+                pageTitle:'my Orders',
+                orders:[]
+            })
+        }
+    })
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 }
 
 exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가 
@@ -198,11 +193,4 @@ exports.postDeleteOrder=(req,res,next)=>{
         error.httpStatusCode = 500;
         return next(error);
     });
-}
-
-exports.getSell=(req,res,next)=>{
-    res.render('shop/sell',{
-        path:'/sell',
-        pageTitle:'become a seller!'
-    })
 }

@@ -18,7 +18,7 @@
             <li class="main-header__item">
                 <a class="<%= path === '/sell' ? 'active' : '' %>" href="/sell"> Sell </a>
             </li>
-            <%if(isAuthenticated) {%>
+            <%if(isAuthenticated && isSeller) {%>
                 <li class="main-header__item">
                     <a class="<%= path === '/admin/add-product' ? 'active' : '' %>" href="/admin/add-product">Add Product
                     </a>
@@ -62,7 +62,7 @@
                     <li class="mobile-nav__item">
                         <a class="<%= path === '/sell' ? 'active' : '' %>" href="/sell">Sell</a>
                     </li>
-                <%if(isAuthenticated) {%>
+                <%if(isAuthenticated && isSeller) {%>
                 <li class="mobile-nav__item">
                     <a class="<%= path === '/admin/add-product' ? 'active' : '' %>" href="/admin/add-product">Add Product
                     </a>

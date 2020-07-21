@@ -5,9 +5,30 @@
 <body>
     <%- include('../includes/navigation.ejs') %>
     <main>
-      <h2>Become Amadoo's Seller ! </h2>
+      <% if (!isAuthenticated) { %> 
+        <h2>Become Amadoo's Seller ! </h2>
       <a href="/login" class="btn">Sign in to your account</a>
       <a href="/signUp" class="btn">Sign up now</a>
-
+      <% }else if(isSeller) {%>
+        <!--seller 취소-->
+        <h2>Do you want to quit to be a Seller of Amadoo?</h2>
+        <p>등록하신 모든 상품이 삭제되니, 신중하게 선택해주세요.</p>
+        <p>정말로 Seller를 그만두시려면 , 비밀번호를 입력해주세요.</p>
+        <form class="product-form" action="/sell-delete" method="POST">
+            <label for="password">password</label>
+            <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>">
+            <input type="password" name="password" id="password"> 
+            <button class="btn" type="submit"> 삭제 </button>
+        </form>
+      <%  } else{%>
+        <!--  사업자 이름 등록 -->
+        <h2>Become Amadoo's Seller ! </h2>
+        <form class="product-form" action="/sell" method="POST">
+            <label for="account ">seller's name</label>
+            <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>">
+            <input type="text" name="sellerName">
+            <button class="btn" type="submit"> register </button>
+        </form>
+      <% } %>
     </main>
 <%- include('../includes/end.ejs') %>

@@ -1,4 +1,5 @@
 const User =require('../Models/user');
+const Product= require('../Models/product');
 const bcrypt = require('bcryptjs');
 const api_info = require('../api_tokens');
 const nodemailer = require('nodemailer');
@@ -14,7 +15,7 @@ const welcomeMessage=  `<h1>Thank you for signing in our shopping mall 'AMADOO' 
 <p> we hope you'll get bunch of great exprience in our shop</p>
 <p> if you have any troubles while shopping, please let us know by this email! </p>
 `
-
+const sellerMessage=`<h1>You are a seller Now! </h1> thank you for registering our selling system. we hope you'll expreience great things.`;
 const sendMail = async(to , subject, html) => { // gmail api 사용 
     const googleTransporter = await nodemailer.createTransport({
         host:'smtp.gmail.com',
@@ -134,6 +135,9 @@ exports.postLogin=(req,res,next)=>{
             }
             else{
                 req.session.isLoggedIn= true; // 로그인 되었음 
+                if(user.Seller){ // Seller 정보 확인 
+                    req.session.isSeller=true;
+                }
                 req.session.user = user; // 유저 정보 저장 
                 req.session.save(err=>{ // 세션 저장 
                 console.log(err);
@@ -243,4 +247,46 @@ exports.postResetPage=(req,res,next)=>{
         error.httpStatusCode = 500;
         return next(error);
     });
+}
+
+exports.getSell=(req,res,next)=>{
+    res.render('shop/sell',{
+        path:'/sell',
+        pageTitle:'become a seller!'
+    })
+}
+
+exports.postSell=(req,res,next)=>{
+    const sellerName = req.body.sellerName;
+    User.findById(req.user._id)
+    .then(user=>{
+        user.Seller=sellerName;
+        return user.save();
+    })
+    .then(result=>{
+        res.redirect('/admin/add-product');
+            // sendMail(email,'you are a Seller now!', 
+            // SellerMessage);
+    })
+    .catch(err=>next(err));
+}
+
+exports.postSellDelete=(req,res,next)=>{ // seller 취소 
+    const password=req.body.password;
+    User.findById(req.user._id)
+    .then(user=>{
+        return bcrypt.compare(password,user.password) // 비밀번호 확인 
+        .then(doMatch=>{ 
+            if(doMatch){ // 비밀번호 맞을 경우
+                user.Seller=undefined;
+                return user.save()
+                .then(result=>{
+                    return Product.deleteMany({userId:user._id}); // 해당 유저가 등록한 상품 모두 삭제 
+                })
+            }
+        })
+    })
+    .then(result=>{
+        res.redirect('/sell');
+    })
 }
