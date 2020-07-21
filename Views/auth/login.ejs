@@ -24,17 +24,12 @@
             </div>
             <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
             <button class="btn" type="submit">continue</button>
-        </form>
-        <form class="product-form" action="/signUp" method="GET">
             <p >Are you new to Amadoo?</p>
-            <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
-            <button class="btn" type="submit">sign up now</button>
-        </form>
-        <form class="product-form" action="/new-password" method="GET">
+            <a href="/signUp" class="btn">sign up now</a>
             <p >did you forget your password?</p>
-            <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
-            <button class="btn" type="submit">forgot my password!</button>
+            <a href="/new-password" class="btn">forgot my password</a>
         </form>
+
     </main>
 
 <%- include('../includes/end.ejs') %>

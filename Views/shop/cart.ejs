@@ -33,14 +33,9 @@
                 <% } %>
             <% } else { %>
                 <h1>Your Cart is Empty!</h1>
-                <form action="/login" method="GET">
-                    <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
-                    <button type="submit" class="btn">Sign in to your account</button>
-                </form>
-                <form action="/signUp" method="GET">
-                    <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
-                    <button type="submit" class="btn">Sign up now</button>
-                </form>
+                <a href="/login" class="btn">Sign in to your account</a>
+                <a href="/signUp" class="btn">Sign up now</a>
+
             <% } %> 
         </main>
         <%- include('../includes/end.ejs') %>

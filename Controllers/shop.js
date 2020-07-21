@@ -199,3 +199,10 @@ exports.postDeleteOrder=(req,res,next)=>{
         return next(error);
     });
 }
+
+exports.getSell=(req,res,next)=>{
+    res.render('shop/sell',{
+        path:'/sell',
+        pageTitle:'become a seller!'
+    })
+}

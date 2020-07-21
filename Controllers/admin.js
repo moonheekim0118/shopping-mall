@@ -103,7 +103,6 @@ exports.getEditProduct=(req,res,next)=>{
     });
 
 };
-
 exports.postEditProduct=(req,res,next)=>{ 
     const title = req.body.title;           
     const image =req.file;
