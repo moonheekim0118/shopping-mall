@@ -1,7 +1,6 @@
 const Product = require('../Models/product');
 const Order = require('../Models/order');
 const product = require('../Models/product');
-const { result } = require('lodash');
 const POST_PER_PAGE = 1;
 
 const paginationModule = (pageNum,res,renderingPath, title, path)=>{
@@ -88,21 +87,16 @@ exports.getCart=(req,res,next)=>{
 }
 
 exports.postAddToCart=(req,res,next)=>{
-    if(req.user){
-        const productId=req.body.productId;
-        req.user.addToCart(productId)
-       .then(result=>{
-        res.redirect('/cart');
+    const productId=req.body.productId;
+    req.user.addToCart(productId)
+   .then(result=>{
+    res.redirect('/');
     })
     .catch(err=>{
         const error = new Error(err);
         error.httpStatusCode = 500;
         return next(error);
-    });
-    }
-    else{
-        res.redirect('/login');
-    }
+});
 }
 
 // 카트에서 product 삭제 
@@ -165,12 +159,13 @@ exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가
                 user:{userId:req.user._id}
             });
         }
-        order.addOrder(req.user._id)
+        order.addOrder(req.user.cart.items)
         .then(result=>{
-            req.user.clearCart(); // 카트 비우기 
+            req.user.adjustCart(); // 카트 비우기 
             res.redirect('/orders');
         })
     }).catch(err=>{
+        console.log(err);
         const error = new Error(err);
         error.httpStatusCode = 500;
         return next(error);
@@ -191,4 +186,48 @@ exports.postDeleteOrder=(req,res,next)=>{
     .catch(err=>{
        res.status(500).json({message:'fail'});
     });
+}
+
+
+exports.cartChangeQty =(req,res,next)=>{ // 카트 qty 변경 
+    const productId = req.params.productId;
+    const qty = req.query.qty;
+    req.user.changeQty(productId,qty) 
+    .then(result=>{
+        res.status(200).json({message:'succedd'});
+    })
+    .catch(err=>{
+        res.status(500).json({message:'fail'});
+    })
+}
+
+
+
+exports.orderChangeQty =(req,res,next)=>{ // 오더 qty 변경 
+    const productId = req.params.productId;
+    const qty = req.query.qty;
+    Order.findOne({'user.userId':req.user._id})
+    .then(order=>{
+        return order.changeQty(productId,qty);
+    }).then(result=>{
+        res.status(200).json({message:'succed'});
+    })
+    .catch(err=>{
+        console.log(err);
+        res.status(500).json({message:'fail'});
+    })
+
+}
+
+exports.cartOrderd=(req,res,next)=>{ // orderd or not check해주기 --> order 에 들어갈 cart목록 체크 
+    const productId = req.params.productId;
+    const orderd = req.query.orderd;
+    req.user.orderCheck(productId,orderd)
+    .then(result=>{
+        res.status(200).json({message:'succed'});
+    })
+    .catch(err=>{
+        console.log(err);
+        res.status(500).json({message:'fail'});
+    })
 }

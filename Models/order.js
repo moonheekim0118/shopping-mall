@@ -1,7 +1,7 @@
 const mongoose =require('mongoose');
 const Schema = mongoose.Schema;
-const Product = require('../Models/product');
 const User= require('../Models/user');
+const Product = require('../Models/product');
 
 /*
 Order 모델에서 효율성을 위해서 한 사람당 하나의 Order 스키마만 생성하도록 하였다.
@@ -32,28 +32,26 @@ const OrderSchema = new Schema({
     }
 });
 
-OrderSchema.methods.addOrder=function(userId){ // order에 상품 추가- 이미 order에 있는 상품은 수량만 늘리기 
-    return User.findById(userId)
-    .then(user=>{
-        const cart_items = user.cart.items;
-        // 추가해준다. 이미 있는 상품은 quantity를 올려주고 아닌 상품은 추가..
-        let updatedOrderItem=[...this.products.items];
-        for(item of cart_items){
-            const itemIndex = this.products.items.findIndex(cp=>{
-                return cp.productId.toString()==item.productId.toString();
-            })
-            let newQuantity = 1;
-            if(itemIndex>=0){ // 이미 order에 있는 경우 
-                newQuantity+=this.products.items[itemIndex].quantity;
-                updatedOrderItem[itemIndex].quantity=newQuantity;
-            }
-            else{ // 없는 경우 
-                updatedOrderItem.push({productId:item.productId, quantity: item.quantity});
-            }
+OrderSchema.methods.addOrder=function(cart_items){ // order에 상품 추가- 이미 order에 있는 상품은 수량만 늘리기 
+    let updatedOrderItem=[...this.products.items];
+    for(item of cart_items){
+        console.log(item.orderd);
+        if(item.orderd=='true') continue; // true라고 표시된건 orderd에 체크 안되어있다는 것으로 push하지 않고 넘어간다. 
+        const itemIndex = this.products.items.findIndex(cp=>{
+            return cp.productId.toString()==item.productId.toString();
+        })
+        let newQuantity = 1;
+        if(itemIndex>=0){ // 이미 order에 있는 경우 
+            newQuantity+=this.products.items[itemIndex].quantity;
+            updatedOrderItem[itemIndex].quantity=newQuantity;
         }
-        this.products.items = updatedOrderItem;
-        return this.save();
-    }).catch(err=>console.log(err));
+        else{ // 없는 경우 
+            updatedOrderItem.push({productId:item.productId, quantity: item.quantity});
+        }
+    }
+    this.products.items = updatedOrderItem;
+    return this.save();
+
 }
 
 OrderSchema.methods.removeOrder=function(product_id){ // order에서 특정 상품 삭제 
@@ -83,5 +81,15 @@ OrderSchema.methods.renewOrder=function(){
         }
         return this.save();
     })
+}
+
+OrderSchema.methods.changeQty=function(product_Id,qty){
+    const orderProductIndex= this.products.items.findIndex(cp=>{
+        return cp.productId.toString()==product_Id.toString();
+    });
+    const updatedOrderitems=[...this.products.items];
+    updatedOrderitems[orderProductIndex].quantity=qty;
+    this.products.items=updatedOrderitems;
+    return this.save();
 }
 module.exports = mongoose.model('Order', OrderSchema);

@@ -11,9 +11,11 @@
                         <% products.forEach(p => { %>
                             <li class="cart__item">
                                 <h1><%= p.productId.title %></h1>
-                                <h2>Quantity: <%= p.quantity %></h2>
                                 <input type="hidden" value="<%= p.productId._id %>" name="productId">
-                                <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
+                                <input type="hidden"  name="_csrf"  value="<%= csrfToken%>">
+                                <label for="qty">quantity: </label>
+                                <input type="number" name="qty" value="<%= p.quantity%>" onclick="cartChangeQty(this)">
+                                <input type="checkbox" class="orderCheck" name="order" checked="true" onclick="orderChecked(this)">
                                 <button class="btn danger" type="button" onclick="deleteFromCart(this)">Delete</button>
                             </li>
                         <% }) %>

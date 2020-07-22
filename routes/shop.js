@@ -11,14 +11,19 @@ router.get('/products', shopController.getProducts);
 
 router.get('/cart',shopController.getCart);
 
-router.post('/cart',shopController.postAddToCart);
+router.post('/cart',AuthRouting.loginCheck ,shopController.postAddToCart);
 
 router.get('/orders', AuthRouting.loginCheck, shopController.getOrder);
 
-router.post('/create-order',shopController.postAddToOrder);
+router.post('/create-order',AuthRouting.loginCheck,shopController.postAddToOrder);
 
-router.delete('/cart/:productId',shopController.postDeleteCart);
+router.delete('/cart/:productId',AuthRouting.loginCheck,shopController.postDeleteCart);
 
-router.delete('/order/:productId',shopController.postDeleteOrder);
+router.delete('/order/:productId',AuthRouting.loginCheck,shopController.postDeleteOrder);
 
+router.get('/cart-qty/:productId',AuthRouting.loginCheck,shopController.cartChangeQty);
+
+router.get('/order-qty/:productId',AuthRouting.loginCheck,shopController.orderChangeQty);
+
+router.get('/cart-orderd/:productId',AuthRouting.loginCheck, shopController.cartOrderd);
 module.exports=router;

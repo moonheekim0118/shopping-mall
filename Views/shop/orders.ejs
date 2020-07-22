@@ -14,12 +14,13 @@
                     <% orders.forEach(order => { %>
                         <div class="order">
                              <p class="order_title"><%= order.productId.title %></p>
-                             <p class="order_quantity">quantity is <%= order.quantity %></p>
                              <% orderPrice=(order.productId.price*order.quantity)%>
                              <% totalPrice+=orderPrice %>
                              <p class="order_price">$ <%= orderPrice%></p>
                              <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
                              <input type="hidden" value="<%= order.productId.id %>" name="productId">
+                             <label for="qty">quantity: </label>
+                             <input type="number" name="qty" value="<%= order.quantity%>" onclick="orderChangeQty(this)">
                             <button class="btn danger" type="button" onclick="deleteFromOrder(this)">Delete</button>
                         </div>
                     <% }); %>
