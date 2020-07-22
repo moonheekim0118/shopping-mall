@@ -10,22 +10,21 @@
             <% } else { %>
                 <ul class="orderList">
                     <% let totalPrice=0 %>
+                    <% let orderPrice=0%>
                     <% orders.forEach(order => { %>
                         <div class="order">
                              <p class="order_title"><%= order.productId.title %></p>
                              <p class="order_quantity">quantity is <%= order.quantity %></p>
-                             <p class="order_price">$ <%= (order.productId.price*order.quantity)%></p>
-                             <% totalPrice+=(order.productId.price*order.quantity) %>
+                             <% orderPrice=(order.productId.price*order.quantity)%>
+                             <% totalPrice+=orderPrice %>
+                             <p class="order_price">$ <%= orderPrice%></p>
                              <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
                              <input type="hidden" value="<%= order.productId.id %>" name="productId">
-                             <input type="hidden" value="<%=order.productId.price*order.quantity %>" name="price">
-                            <button class="btn danger" type="button" onclick="deleteFromOrder(this)" >Delete</button>
+                            <button class="btn danger" type="button" onclick="deleteFromOrder(this)">Delete</button>
                         </div>
                     <% }); %>
                 </ul>
-               <script src="/js/admin.js">
-                    adjustPrice(totalPrice)
-               </script>
+                <p id="total_price"> total price is <%=totalPrice%></p>
             <% } %>
         </main>
         <%- include('../includes/end.ejs') %>
