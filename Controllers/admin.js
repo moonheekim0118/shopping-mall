@@ -1,5 +1,7 @@
 const Product = require('../Models/product');
 const { validationResult } = require('express-validator/check');
+const fileHelper = require('../util/fileHelper');
+const user = require('../Models/user');
 exports.getProducts=(req,res,next)=>{
     //admin으로부터 등록된 products만 보여준다.
     Product.find({userId:req.user._id})
@@ -140,14 +142,20 @@ exports.postEditProduct=(req,res,next)=>{
 };
 
 exports.postDeleteProduct=(req,res,next)=>{
-    const id= req.body.prodId; // 삭제할 product의 id
-    Product.deleteOne({_id:id, userId:req.user._id})
+    const id= req.params.productId;
+    Product.findById(id)
+    .then(product=>{
+        if(!product){
+            throw new Error('there is no product');
+        }
+        fileHelper.fileDelete(product.imageUrl); // 이미지 삭제
+        return Product.deleteOne({_id:id});
+    })
     .then(result=>{
-        res.redirect('/admin/products');
-    }).catch(err=>{
-        const error = new Error(err);
-        error.httpStatusCode = 500;
-        return next(error);
-    });
+        res.status(200).json({message:'Succed'});
+    })
+    .catch(err=>{
+        res.status(500).json({message:'Fail!'});
+    })
 };
 

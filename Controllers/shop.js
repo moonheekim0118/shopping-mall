@@ -1,6 +1,7 @@
 const Product = require('../Models/product');
 const Order = require('../Models/order');
 const product = require('../Models/product');
+const { result } = require('lodash');
 const POST_PER_PAGE = 1;
 
 const paginationModule = (pageNum,res,renderingPath, title, path)=>{
@@ -106,15 +107,13 @@ exports.postAddToCart=(req,res,next)=>{
 
 // 카트에서 product 삭제 
 exports.postDeleteCart=(req,res,next)=>{
-    const productId=req.body.productId;
+    const productId=req.params.productId;
     req.user.removeFromCart(productId)
     .then(result=>{
-        res.redirect('/cart');
+        res.status(200).json({message:'succeed'});
     })
     .catch(err=>{
-        const error = new Error(err);
-        error.httpStatusCode = 500;
-        return next(error);
+        res.status(500).json({message:'fail'});
     });
     
 }
@@ -181,16 +180,15 @@ exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가
 // 특정 order 삭제하기 
 // 'many'이면..get 할때 뒤에 s를 붙여야한다.
 exports.postDeleteOrder=(req,res,next)=>{
-    const product_id=req.body.productId;
+    const productId=req.params.productId;
     Order.findOne({'user.userId':req.user._id})
     .then(order=>{
-        order.removeOrder(product_id)
-        .then(result=>{
-            res.redirect('/orders');
-        })
-    }).catch(err=>{
-        const error = new Error(err);
-        error.httpStatusCode = 500;
-        return next(error);
+        return order.removeOrder(productId)
+    })
+    .then(result=>{
+        res.status(200).json({message:'succeed'});
+    })
+    .catch(err=>{
+       res.status(500).json({message:'fail'});
     });
 }

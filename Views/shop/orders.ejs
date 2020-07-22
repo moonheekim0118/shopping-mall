@@ -16,15 +16,17 @@
                              <p class="order_quantity">quantity is <%= order.quantity %></p>
                              <p class="order_price">$ <%= (order.productId.price*order.quantity)%></p>
                              <% totalPrice+=(order.productId.price*order.quantity) %>
+                             <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
+                             <input type="hidden" value="<%= order.productId.id %>" name="productId">
+                             <input type="hidden" value="<%=order.productId.price*order.quantity %>" name="price">
+                            <button class="btn danger" type="button" onclick="deleteFromOrder(this)" >Delete</button>
                         </div>
-                        <form action="/order-delete-item" method="POST">
-                            <input  type="hidden"  name="_csrf"  value="<%= csrfToken%>"  >
-                            <input type="hidden" value="<%= order.productId.id %>" name="productId">
-                            <button class="btn danger" type="submit">Delete</button>
-                        </form>
                     <% }); %>
                 </ul>
-                <p id="total_price"> total Price is  $<%=totalPrice %></p>
+               <script src="/js/admin.js">
+                    adjustPrice(totalPrice)
+               </script>
             <% } %>
         </main>
         <%- include('../includes/end.ejs') %>
+        <script src="/js/admin.js"></script>

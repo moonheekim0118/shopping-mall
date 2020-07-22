@@ -33,6 +33,6 @@ body('description').isLength({min:5, max:100}).withMessage('상품 설명은 최
 ] ,
 AdminController.postEditProduct);
 
-router.post('/delete-product', AuthRouting.sellerCheck,AdminController.postDeleteProduct);
+router.delete('/products/:productId', AuthRouting.sellerCheck,AdminController.postDeleteProduct);
 
 module.exports=router;

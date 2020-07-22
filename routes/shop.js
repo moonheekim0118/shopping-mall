@@ -17,8 +17,8 @@ router.get('/orders', AuthRouting.loginCheck, shopController.getOrder);
 
 router.post('/create-order',shopController.postAddToOrder);
 
-router.post('/cart-delete-item',shopController.postDeleteCart);
+router.delete('/cart/:productId',shopController.postDeleteCart);
 
-router.post('/order-delete-item',shopController.postDeleteOrder);
+router.delete('/order/:productId',shopController.postDeleteOrder);
 
 module.exports=router;
