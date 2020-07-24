@@ -8,9 +8,11 @@ const AdminRouter = require('./routes/admin');
 const ShopRouter = require('./routes/shop');
 const AuthRouter = require('./routes/auth');
 const User = require('./Models/user');
+const Product =require('./Models/product');
 const csrf = require('csurf');
 const csrfProtection = csrf();
 const multer = require('multer');
+
 const fileStorage = multer.diskStorage({
     destination: (req,file,cb)=>{
         cb(null, 'images');
@@ -91,7 +93,8 @@ app.use((error,req,res,next)=>{
 mongoose.connect(MONGODB_URI)
 .then(result=>{
     app.listen(3000);
-}).catch(err=>{
+})
+.catch(err=>{
     const error = new Error(err);
     error.httpStatusCode = 500;
     console.log(err);

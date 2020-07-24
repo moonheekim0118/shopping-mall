@@ -6,6 +6,11 @@
     <%- include('../includes/navigation.ejs') %>
     <main>
         <% if (prods.length > 0) { %>
+            <form action="/search" method="GET">
+                <label>title search</label>
+                <input class ="searchBox" type="text" name="searchWord">
+                <button class="btn" type="submit">search</button>
+            </form>
             <div class="grid">
                 <% for (let product of prods) { %>
                     <article class="card product-item">

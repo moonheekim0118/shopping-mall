@@ -26,4 +26,7 @@ router.get('/cart-qty/:productId',AuthRouting.loginCheck,shopController.cartChan
 router.get('/order-qty/:productId',AuthRouting.loginCheck,shopController.orderChangeQty);
 
 router.get('/cart-orderd/:productId',AuthRouting.loginCheck, shopController.cartOrderd);
+
+router.get('/search', shopController.getSearch);
+
 module.exports=router;

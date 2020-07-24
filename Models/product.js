@@ -23,5 +23,5 @@ const ProductSchema = new Schema({
         required:true
     }
 });
-
+ProductSchema.index({title: 'text'}); // text index로 등록 
 module.exports=mongoose.model('Product',ProductSchema);
