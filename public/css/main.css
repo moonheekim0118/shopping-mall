@@ -149,7 +149,7 @@ form {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   background: rgba(0, 0, 0, 0.5);
   z-index: 5;
   display: none;
@@ -259,6 +259,36 @@ form {
 {
   background-color: seagreen;
   color: white;
+  margin:0 1rem;
+}
+
+.detail{
+  font-family: fantasy;
+}
+.reviewBox{
+  display: inline-block;
+  width:600px;
+  height: 250px;
+  margin-top: 20px;
+  border: 1px solid gray;
+  padding:0.5rem;
+  text-align: left;
+}
+
+.reviewForm{
+  display: inline-block;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+.reviewForm input{
+  width: 570px;
+}
+
+.reviewForm textarea{
+  margin-top: 20px;
+  width: 550px;
+  height:150px;
 }
 
 @media (min-width: 768px) {

@@ -1,6 +1,6 @@
 const Product = require('../Models/product');
 const Order = require('../Models/order');
-const { search } = require('../database');
+const { validationResult } = require('express-validator/check');
 const POST_PER_PAGE = 1;
 
 exports.getIndex=(req,res,next)=>{
@@ -41,7 +41,8 @@ exports.getProductDetail=(req,res,next)=>{
             product:product,
             pageTitle:'DETAIL',
             path:'/products',
-            page:page
+            page:page,
+            user_id:req.user._id.toString()
         })
     })
     .catch(err=>console.log(err));
@@ -191,7 +192,6 @@ exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가
 }
 
 // 특정 order 삭제하기 
-// 'many'이면..get 할때 뒤에 s를 붙여야한다.
 exports.postDeleteOrder=(req,res,next)=>{
     const productId=req.params.productId;
     Order.findOne({'user.userId':req.user._id})
@@ -278,4 +278,44 @@ exports.getSearch=(req,res,next)=>{ // 상품 찾기
         })
         })
     .catch(err =>console.log(err));
+}
+
+
+exports.postAddReview=(req,res,next)=>{ // 리뷰 추가 
+    const productId = req.body.productId;
+    const title = req.body.title;
+    const contents = req.body.contents;
+    const user_id = req.user._id;
+    const addedTime = Date.now();
+    const error = validationResult(req);
+    console.log(error);
+    if(!error.isEmpty()){
+        return res.status(422).redirect('/products/'+productId); // 에러 처리 나중에 수정 필요 
+    }
+    Product.findById(productId) // 해당 프로덕트 찾기 
+    .then(product=>{
+        console.log(product); 
+        return product.addReview(title,contents,addedTime,user_id); //추가 
+    })
+    .then(result=>{
+        console.log(result);
+        res.redirect('/products/'+productId);
+    })
+    .catch(err=>next(err));
+    
+}
+
+
+exports.deleteReview = (req,res,next)=>{ // 리뷰 삭제함수 
+    const ProductId = req.params.productId;
+    Product.findById(ProductId)
+    .then(product=>{
+        return product.deleteReview(req.user._id); // 현재 로그인된 유저가 쓴 리뷰만 삭제할 수 있다. 
+    })
+    .then(result=>{
+        res.status(200).json({message:'succeed'});
+    })
+    .catch(err=>{res.status(500).json({message:'fail'})
+    console.log(err);
+});
 }
