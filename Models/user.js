@@ -104,9 +104,10 @@ userSchema.methods.changeQty=function(product_id,qty){
     const cartProductIndex= this.cart.items.findIndex(cp=>{
         return cp.productId.toString()==product_id.toString();
     });
-    const updatedCartitems=[...this.cart.items];
-    updatedCartitems[cartProductIndex].quantity=qty;
-    this.cart.items=updatedCartitems;
+    // const updatedCartitems=[...this.cart.items];
+    // updatedCartitems[cartProductIndex].quantity=qty;
+    // this.cart.items=updatedCartitems;
+    this.cart.items[cartProductIndex].quantity=qty;
     return this.save();
     
 }

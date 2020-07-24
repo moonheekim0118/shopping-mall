@@ -1,9 +1,11 @@
 const Product = require('../Models/product');
 const Order = require('../Models/order');
-const product = require('../Models/product');
+const { search } = require('../database');
 const POST_PER_PAGE = 1;
 
-const paginationModule = (pageNum,res,renderingPath, title, path)=>{
+exports.getIndex=(req,res,next)=>{
+    let pageNum=1;
+    if(req.query.page){  pageNum=+req.query.page; }
     let totalItems;    
     Product.find().countDocuments() // 전체 prouct개수 세기
     .then(itemsNum=>{ 
@@ -13,9 +15,9 @@ const paginationModule = (pageNum,res,renderingPath, title, path)=>{
         .limit(POST_PER_PAGE) // 현재 페이지에 와야할 product 수 
     })
     .then(products=>{
-        res.render(renderingPath, {
-            pageTitle: title,
-            path:path,
+        res.render('shop/index', {
+            pageTitle: 'welcome to Amadoo',
+            path:'/',
             prods: products,
             currentPage:pageNum, // 현재 페이지 
             hasNextPage: POST_PER_PAGE*pageNum < totalItems, // 다음 페이지가 있는가? 
@@ -26,11 +28,6 @@ const paginationModule = (pageNum,res,renderingPath, title, path)=>{
         })
         })
     .catch(err =>console.log(err));
-}
-exports.getIndex=(req,res,next)=>{
-    let pageNum=1;
-    if(req.query.page){  pageNum=+req.query.page; }
-    paginationModule(pageNum,res,'shop/index', 'welcome to Amadoo', '/');
 }
 
 exports.getProductDetail=(req,res,next)=>{
@@ -53,7 +50,28 @@ exports.getProductDetail=(req,res,next)=>{
 exports.getProducts=(req,res,next)=>{
     let pageNum=1;
     if(req.query.page){  pageNum=+req.query.page; }
-    paginationModule(pageNum,res,'shop/product-list','product list','/products');
+    let totalItems;    
+    Product.find().countDocuments() // 전체 prouct개수 세기
+    .then(itemsNum=>{ 
+        totalItems=itemsNum;
+        return Product.find() 
+        .skip((pageNum-1)*POST_PER_PAGE) // 앞 페이지 product skip  
+        .limit(POST_PER_PAGE) // 현재 페이지에 와야할 product 수 
+    })
+    .then(products=>{
+        res.render('shop/product-list', {
+            pageTitle: 'product list',
+            path:'/products',
+            prods: products,
+            currentPage:pageNum, // 현재 페이지 
+            hasNextPage: POST_PER_PAGE*pageNum < totalItems, // 다음 페이지가 있는가? 
+            hasPreviousPage: pageNum>=2, // 이전 페이지가 있는가? 
+            nextPage: pageNum+1, // 다음페이지 
+            previousPage:pageNum-1, //이전페이지 
+            lastPage: Math.ceil(totalItems/POST_PER_PAGE) //마지막 페이지 
+        })
+        })
+    .catch(err =>console.log(err));
 }
 
 exports.getCart=(req,res,next)=>{
@@ -230,4 +248,34 @@ exports.cartOrderd=(req,res,next)=>{ // orderd or not check해주기 --> order �
         console.log(err);
         res.status(500).json({message:'fail'});
     })
+}
+
+exports.getSearch=(req,res,next)=>{ // 상품 찾기 
+    const searchWord = req.query.searchWord;
+    console.log(searchWord);
+    let pageNum=1;
+    if(req.query.page){  pageNum=+req.query.page; }
+    console.log(req.query.page);
+    let totalItems; 
+    Product.find({ $text : {$search: searchWord}}).countDocuments()
+    .then(itemsNum=>{ 
+        totalItems=itemsNum;
+        return Product.find({ $text : {$search: searchWord}}) 
+        .skip((pageNum-1)*POST_PER_PAGE) // 앞 페이지 product skip  
+        .limit(POST_PER_PAGE) // 현재 페이지에 와야할 product 수 
+    })
+    .then(products=>{
+        res.render('shop/searchingResult', {
+            pageTitle: 'searching result',
+            path:'/search?searchWord='+searchWord,
+            prods: products,
+            currentPage:pageNum, // 현재 페이지 
+            hasNextPage: POST_PER_PAGE*pageNum < totalItems, // 다음 페이지가 있는가? 
+            hasPreviousPage: pageNum>=2, // 이전 페이지가 있는가? 
+            nextPage: pageNum+1, // 다음페이지 
+            previousPage:pageNum-1, //이전페이지 
+            lastPage: Math.ceil(totalItems/POST_PER_PAGE) //마지막 페이지 
+        })
+        })
+    .catch(err =>console.log(err));
 }
