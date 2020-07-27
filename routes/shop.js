@@ -32,10 +32,10 @@ router.get('/cart-orderd/:productId',AuthRouting.loginCheck, shopController.cart
 router.get('/search', shopController.getSearch);
 
 router.post('/addComment', AuthRouting.loginCheck, [
-    body('title').isString().withMessage('제목을 올바르게 입력해주세요').
-    isLength({min:3, max:15}).withMessage('제목은 최소 3글자, 최대 15글자 입니다.'),
-    body('contents').isString().withMessage('내용을 올바르게 입력해주세요').
-    isLength({min:10, max:50}).withMessage('내용은 최소 10글자여야 합니다.')
+    body('title').isString().withMessage('Please enter correct title of your Review').
+    isLength({min:3, max:15}).withMessage('title minimum 3 types , maximum 15 types'),
+    body('contents').isString().withMessage('Please enter correct description').
+    isLength({min:10, max:50}).withMessage('Description minimum 10types , maximum 50types ')
 ],shopController.postAddReview);
 
 router.delete('/deleteReview/:productId', AuthRouting.loginCheck,

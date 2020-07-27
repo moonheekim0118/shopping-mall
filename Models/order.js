@@ -35,12 +35,11 @@ const OrderSchema = new Schema({
 OrderSchema.methods.addOrder=function(cart_items){ // order에 상품 추가- 이미 order에 있는 상품은 수량만 늘리기 
     let updatedOrderItem=[...this.products.items];
     for(item of cart_items){
-        console.log(item.orderd);
         if(item.orderd=='true') continue; // true라고 표시된건 orderd에 체크 안되어있다는 것으로 push하지 않고 넘어간다. 
         const itemIndex = this.products.items.findIndex(cp=>{
             return cp.productId.toString()==item.productId.toString();
         })
-        let newQuantity = 1;
+        let newQuantity = item.quantity;
         if(itemIndex>=0){ // 이미 order에 있는 경우 
             newQuantity+=this.products.items[itemIndex].quantity;
             updatedOrderItem[itemIndex].quantity=newQuantity;
@@ -64,6 +63,7 @@ OrderSchema.methods.removeOrder=function(product_id){ // order에서 특정 상�
 
 //admin에서 삭제한 상품이 order에 남아있을 경우 order 갱신 
 OrderSchema.methods.renewOrder=function(){
+    if(this.products.items.length<=0) return this.save();
     const productIds = this.products.items.map(i=>{
         return i.productId;
     });

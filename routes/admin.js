@@ -10,13 +10,12 @@ router.get('/products', AuthRouting.sellerCheck, AdminController.getProducts);
 router.get('/add-product', AuthRouting.sellerCheck, AdminController.getAddProduct);
 
 router.post('/add-product', AuthRouting.sellerCheck,[
-body('title').isString().withMessage('제목을 올바르게 입력해주세요.')
-.isLength({min:2,max:15}).withMessage('제목은 2글자 이상, 15글자 이하여야 합니다.').trim()
-// body('imageUrl').isURL().withMessage('올바른 형식의 이미지 주소를 입력해주세요.').trim()
+body('title').trim().isString().withMessage('Please enter correct title of your Product')
+.isLength({min:2,max:15}).withMessage('title minimum 2 characters , maximum 15 characters')
 ,
-body('price').isNumeric().withMessage('숫자만 입력해주세요')
+body('price').trim().isNumeric().withMessage('Price must be only numbers')
 ,
-body('description').isLength({min:5, max:100}).withMessage('상품 설명은 최소 5글자여야합니다.')
+body('description').isLength({min:5, max:100}).withMessage('Description minimum 5 characters , maximum 100 chracters')
 ] ,
 AdminController.postAddProduct);
 
@@ -24,12 +23,12 @@ router.get('/edit-product/:productId', AuthRouting.sellerCheck, AdminController.
 
 router.post('/edit-product',  AuthRouting.sellerCheck,
 [
-body('title').isString().withMessage('제목을 올바르게 입력해주세요.')
-.isLength({min:2,max:15}).withMessage('제목은 2글자 이상, 15글자 이하여야 합니다.').trim()
+body('title').trim().isString().withMessage('Please enter correct title of your Product')
+.isLength({min:2,max:15}).withMessage('title minimum 2 characters , maximum 15 characters')
 ,
-body('price').isNumeric().withMessage('숫자만 입력해주세요')
+body('price').trim().isNumeric().withMessage('Price must be only numbers')
 ,
-body('description').isLength({min:5, max:100}).withMessage('상품 설명은 최소 5글자여야합니다.')
+body('description').isLength({min:5, max:100}).withMessage('Description minimum 5 characters , maximum 100 chracters')
 ] ,
 AdminController.postEditProduct);
 

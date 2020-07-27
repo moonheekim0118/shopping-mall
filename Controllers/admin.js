@@ -1,12 +1,11 @@
 const Product = require('../Models/product');
 const { validationResult } = require('express-validator/check');
 const fileHelper = require('../util/fileHelper');
-const user = require('../Models/user');
-exports.getProducts=(req,res,next)=>{
+
     //admin으로부터 등록된 products만 보여준다.
+exports.getProducts=(req,res,next)=>{
     Product.find({userId:req.user._id})
     .then(products=>{
-        console.log(products);
         res.render('admin/products',
         {
             products: products,
@@ -21,8 +20,8 @@ exports.getProducts=(req,res,next)=>{
     });
 };
 
+//  현재 로그인한 유저가 Product 등록 페이지 ( Seller only )
 exports.getAddProduct=(req,res,next)=>{
-    //req.user가 특정 product를 등록하는 버튼 
     res.render('admin/add-product', {
         pageTitle: 'ADD NEW PRODUCT',
         path: '/admin/add-product',
@@ -33,6 +32,7 @@ exports.getAddProduct=(req,res,next)=>{
     });
 };
 
+//  현재 로그인한 유저가 Product 등록 리퀘스트  ( Seller only )
 exports.postAddProduct=(req,res,next)=>{
     // add product에서 버튼을 누르면 작동 
     // 해당 product를 저장하는 작업 수행
@@ -41,7 +41,6 @@ exports.postAddProduct=(req,res,next)=>{
     const price = req.body.price;
     const description=req.body.description;
     const error = validationResult(req);
-    console.log(image);
     if(!error.isEmpty()){
         return res.status(422).render('admin/add-product',{
             path:'/add-product',
@@ -57,14 +56,14 @@ exports.postAddProduct=(req,res,next)=>{
         return res.status(422).render('admin/add-product',{
             path:'/add-product',
             pageTitle:'add product',
-            ErrorMessage : '이미지 파일은 JPG , PNG, JPEG 확장자만 가능합니다.',
+            ErrorMessage : 'Image file must be JPG , PNG or JPEG',
             validationError: [],
             editing:false,
             isError:true,
             product:{title:title,price:price,description:description}
         })
     }
-    const imageUrl = image.path; // db 저장용 
+    const imageUrl = image.path; // db 저장용 path (static path )
     const product = new Product({
         title:title,
         price:price,
@@ -82,8 +81,9 @@ exports.postAddProduct=(req,res,next)=>{
     });
 };
 
+// 등록한 Product 수정 페이지 (Seller only)
 exports.getEditProduct=(req,res,next)=>{
-    const productId=req.params.productId; // 파라미터로부터 파싱해온다 
+    const productId=req.params.productId; // 파라미터로 받아온 product id 
     Product.findById(productId)
     .then(product=>{
         if(product.userId.toString()!==req.user._id.toString()){
@@ -94,7 +94,7 @@ exports.getEditProduct=(req,res,next)=>{
             path: '/admin/products',
             editing:true,
             isError:false,
-            product: product, //해당 product의 정보를 add-product에 보낸다. 
+            product: product, 
             ErrorMessage:'',
             validationError:[]
         });
@@ -105,6 +105,8 @@ exports.getEditProduct=(req,res,next)=>{
     });
 
 };
+
+// 등록한 Product 수정 리퀘스트 (Seller only)
 exports.postEditProduct=(req,res,next)=>{ 
     const title = req.body.title;           
     const image =req.file;

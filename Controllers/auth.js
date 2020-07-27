@@ -46,6 +46,7 @@ const sendMail = async(to , subject, html) => { // gmail api 사용
     }
 }
 
+// 로그인 페이지 
 exports.getLogin=(req,res,next)=>{
     res.render('auth/login', {
         path:'/login',
@@ -56,6 +57,7 @@ exports.getLogin=(req,res,next)=>{
     });
 }
 
+// 회원가입 페이지 
 exports.getSignUp=(req,res,next)=>{
     res.render('auth/signUp', {
         path:'/signUp',
@@ -65,11 +67,13 @@ exports.getSignUp=(req,res,next)=>{
         validationError: []
     })
 }
+
+// 회원가입 등록 리퀘스트 
 exports.postSignUp=(req,res,next)=>{
     const email = req.body.email;
     const password = req.body.password;
     const error = validationResult(req);
-    if(!error.isEmpty()){
+    if(!error.isEmpty()){ // validation 체크 
         return res.status(422).render('auth/signUp',{
             path:'/signUp',
             pageTitle:'sign up',
@@ -98,11 +102,13 @@ exports.postSignUp=(req,res,next)=>{
         return next(error);
     });
 }
+
+// 로그인 등록 리퀘스트 
 exports.postLogin=(req,res,next)=>{
     const email = req.body.email;
     const password=req.body.password;
     const error = validationResult(req);
-    if(!error.isEmpty()){
+    if(!error.isEmpty()){ // vaildation 체크 
         return res.status(422).render('auth/login',{
             path:'/login',
             pageTitle:'login',
@@ -113,11 +119,11 @@ exports.postLogin=(req,res,next)=>{
     }
     User.findOne({email:email})
     .then(user=>{
-        if(!user){
+        if(!user){ // email에 해당하는 유저가 없을 경우 
             return res.render('auth/login', {
                 path:'/login',
                 pageTitle:'login',
-                ErrorMessage : '입력하신 email은 존재하지 않습니다.',
+                ErrorMessage : 'Incorrect email',
                 oldInput : {email: email, password: password},
                 validationError:[{param:'email'}]
             })
@@ -128,7 +134,7 @@ exports.postLogin=(req,res,next)=>{
                 res.render('auth/login', {
                     path:'/login',
                     pageTitle:'login',
-                    ErrorMessage : '비밀번호가 일치하지 않습니다.',
+                    ErrorMessage : 'Incorrect Password',
                     oldInput : {email: email, password: password},
                     validationError:[{param:'password'}]
                 });
@@ -154,19 +160,21 @@ exports.postLogin=(req,res,next)=>{
 }
 
 
-exports.getLogout=(req,res,next)=>{ // 로그아웃 
+ // 로그아웃 ---> session destroy 
+exports.getLogout=(req,res,next)=>{
     req.session.destroy();
     res.redirect('/');
 }
 
-exports.getNewPassword=(req,res,next)=>{ // password 재설정
+// password 재설정 페이지
+exports.getNewPassword=(req,res,next)=>{ 
     res.render('auth/new-password', {
         path:'/new-password',
         pageTitle:'resseting password'
     });
 }
-
-exports.postNewPassword=(req,res,next)=>{ // password 재설정 post
+// password 재설정 리퀘스트
+exports.postNewPassword=(req,res,next)=>{ 
     // 토큰 값을 포함한 path를 email 로 발송해준후 리다이렉트.
     const email = req.body.email;
     crypto.randomBytes(32, (err,Buffer)=>{ // 토큰 생성 
@@ -197,11 +205,12 @@ exports.postNewPassword=(req,res,next)=>{ // password 재설정 post
     })
 }
 
+// 이메일로 전송된 페이지 
 exports.getResetPage=(req,res,next)=>{
-    const token = req.params.token;
-    User.findOne({resetToken:token, resetTokenExpiration:{$gt: Date.now()}})
+    const token = req.params.token; // 토큰 가져오기 
+    User.findOne({resetToken:token, resetTokenExpiration:{$gt: Date.now()}}) //해당 토큰 가지고있는 유저 찾기 
     .then(user=>{
-        if(!user){ res.redirect('/');}
+        if(!user){ res.redirect('/');} // 토큰 만기 or 토큰이 다를 경우 리다이렉트 
         else{
             res.render('auth/reset-password', {
                 path:'/reset-password',
@@ -218,12 +227,13 @@ exports.getResetPage=(req,res,next)=>{
     });
 }
 
+// 비밀번호 변경 리퀘스트 
 exports.postResetPage=(req,res,next)=>{
     const token  = req.body.token;
     const userId= req.body.userId;
     const password =req.body.password;
     let foundUser;
-    User.findOne({_id:userId, resetToken:token, resetTokenExpiration:{$gt: Date.now()}})
+    User.findOne({_id:userId, resetToken:token, resetTokenExpiration:{$gt: Date.now()}}) // 토큰 한번 더 체크 
     .then(user=>{
         if(!user){ // user 존재하지 않음 
             res.redirect('/');
@@ -249,6 +259,7 @@ exports.postResetPage=(req,res,next)=>{
     });
 }
 
+// seller 등록 페이지 
 exports.getSell=(req,res,next)=>{
     res.render('shop/sell',{
         path:'/sell',
@@ -256,6 +267,7 @@ exports.getSell=(req,res,next)=>{
     })
 }
 
+// seller 등록 리퀘스트 
 exports.postSell=(req,res,next)=>{
     const sellerName = req.body.sellerName;
     User.findById(req.user._id)
@@ -271,6 +283,7 @@ exports.postSell=(req,res,next)=>{
     .catch(err=>next(err));
 }
 
+// seller 취소 리퀘스트 
 exports.postSellDelete=(req,res,next)=>{ // seller 취소 
     const password=req.body.password;
     User.findById(req.user._id)

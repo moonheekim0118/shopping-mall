@@ -8,7 +8,6 @@ exports.get404error=(req,res,next)=>{
 exports.get500error=(req,res,next)=>{
     res.status(500).render('errors/500',{
     pageTitle:'ERROR FOUND',
-    path:''
-    }
+    path:'' }
     )
 }

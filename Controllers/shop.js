@@ -1,11 +1,11 @@
 const Product = require('../Models/product');
 const Order = require('../Models/order');
 const { validationResult } = require('express-validator/check');
-const POST_PER_PAGE = 1;
+const POST_PER_PAGE = 3;
 
+// 인덱스 페이지 - product list 
 exports.getIndex=(req,res,next)=>{
-    let pageNum=1;
-    if(req.query.page){  pageNum=+req.query.page; }
+    let pageNum= +req.query.page || 1 
     let totalItems;    
     Product.find().countDocuments() // 전체 prouct개수 세기
     .then(itemsNum=>{ 
@@ -27,13 +27,17 @@ exports.getIndex=(req,res,next)=>{
             lastPage: Math.ceil(totalItems/POST_PER_PAGE) //마지막 페이지 
         })
         })
-    .catch(err =>console.log(err));
+    .catch(err =>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 }
 
+// Product 디테일 페이지 
 exports.getProductDetail=(req,res,next)=>{
     const productId= req.params.productId;
     const page = req.query.page;
-    console.log(productId);
     Product.findById(productId)
     .then(product=>{
         res.render('shop/product-detail', 
@@ -42,15 +46,19 @@ exports.getProductDetail=(req,res,next)=>{
             pageTitle:'DETAIL',
             path:'/products',
             page:page,
-            user_id:req.user._id.toString()
+            user_id:req.user ? req.user._id.toString() : undefined // review창을 위해 user id 있으면 넘겨주기 
         })
     })
-    .catch(err=>console.log(err));
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 }
 
+// 전체 Products list 페이지  
 exports.getProducts=(req,res,next)=>{
-    let pageNum=1;
-    if(req.query.page){  pageNum=+req.query.page; }
+    let pageNum= +req.query.page || 1
     let totalItems;    
     Product.find().countDocuments() // 전체 prouct개수 세기
     .then(itemsNum=>{ 
@@ -72,9 +80,14 @@ exports.getProducts=(req,res,next)=>{
             lastPage: Math.ceil(totalItems/POST_PER_PAGE) //마지막 페이지 
         })
         })
-    .catch(err =>console.log(err));
+    .catch(err =>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 }
 
+// Cart 페이지 
 exports.getCart=(req,res,next)=>{
     if(req.user){ // 로그인 된 경우 
         req.user.renewCart().then(result=>{
@@ -96,7 +109,7 @@ exports.getCart=(req,res,next)=>{
             });
         });
     }
-    else{ //로그인 되지 않은 경우
+    else{ //로그인 되지 않은 경우에도 cart에 연결할 수 있게 해준다. 
         res.render('shop/cart', {
             path:'/cart',
             pageTitle: 'my Cart',
@@ -105,6 +118,7 @@ exports.getCart=(req,res,next)=>{
     }
 }
 
+// Cart에 product 추가 
 exports.postAddToCart=(req,res,next)=>{
     const productId=req.body.productId;
     req.user.addToCart(productId)
@@ -118,7 +132,7 @@ exports.postAddToCart=(req,res,next)=>{
 });
 }
 
-// 카트에서 product 삭제 
+// Cart에서 product 삭제 - 비동기 요청 
 exports.postDeleteCart=(req,res,next)=>{
     const productId=req.params.productId;
     req.user.removeFromCart(productId)
@@ -131,36 +145,25 @@ exports.postDeleteCart=(req,res,next)=>{
     
 }
 
-exports.getOrder=(req,res,next)=>{ // Order페이지 띄우기 
+ // Order페이지
+exports.getOrder=(req,res,next)=>{
     // order가 없는 경우에도 renewOrder를 실행하면 null 에러가 뜬다.
     // 따라서 order가 있는 경우와 없는 경우를 나누어주었다. 
-    // 추후 refectoring 필요 
+    // --> renewOrder 메서드에서 구분해줌 . 
     Order.findOne({'user.userId':req.user._id})
     .then(order=>{
-        if(order){
-            order.renewOrder()
-            .then(order=>{
-                order.populate('products.items.productId')
-                .execPopulate()
-                .then(orderObject=>{
-                    const items = orderObject.products.items;
-                    res.render('shop/orders',{
-                        path:'/orders',
-                        pageTitle:'my Orders',
-                        orders:items
-                    })
-                })
-                .catch(err=>console.log(err));
-            })
-            .catch(err=>console.log(err));
-        }
-        else{ // order가 없는 경우 
-            res.render('shop/orders',{
-                path:'/orders',
-                pageTitle:'my Orders',
-                orders:[]
-            })
-        }
+        return order.renewOrder();
+    })
+    .then(renewedOrder=>{
+        return renewedOrder.populate('products.items.productId').execPopulate();
+    })
+    .then(orderObject=>{
+        const items = orderObject.products.items;
+        res.render('shop/orders',{
+            path:'/orders',
+            pageTitle:'my Orders',
+            orders:items
+        })
     })
     .catch(err=>{
         const error = new Error(err);
@@ -169,7 +172,8 @@ exports.getOrder=(req,res,next)=>{ // Order페이지 띄우기
     });
 }
 
-exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가 
+// Cart에서 Order now 리퀘스트 
+exports.postAddToOrder=(req,res,next)=>{ 
     Order.findOne({'user.userId':req.user._id})
     .then(order=>{
         if(!order){
@@ -184,7 +188,6 @@ exports.postAddToOrder=(req,res,next)=>{ // Cart에서 Order로 추가
             res.redirect('/orders');
         })
     }).catch(err=>{
-        console.log(err);
         const error = new Error(err);
         error.httpStatusCode = 500;
         return next(error);
@@ -207,7 +210,8 @@ exports.postDeleteOrder=(req,res,next)=>{
 }
 
 
-exports.cartChangeQty =(req,res,next)=>{ // 카트 qty 변경 
+// 카트 qty 변경 
+exports.cartChangeQty =(req,res,next)=>{ 
     const productId = req.params.productId;
     const qty = req.query.qty;
     req.user.changeQty(productId,qty) 
@@ -221,7 +225,8 @@ exports.cartChangeQty =(req,res,next)=>{ // 카트 qty 변경
 
 
 
-exports.orderChangeQty =(req,res,next)=>{ // 오더 qty 변경 
+// Order qty 변경 
+exports.orderChangeQty =(req,res,next)=>{ 
     const productId = req.params.productId;
     const qty = req.query.qty;
     Order.findOne({'user.userId':req.user._id})
@@ -237,7 +242,8 @@ exports.orderChangeQty =(req,res,next)=>{ // 오더 qty 변경
 
 }
 
-exports.cartOrderd=(req,res,next)=>{ // orderd or not check해주기 --> order 에 들어갈 cart목록 체크 
+// orderd or not check해주기 --> order 에 들어갈 cart목록 체크 
+exports.cartOrderd=(req,res,next)=>{ 
     const productId = req.params.productId;
     const orderd = req.query.orderd;
     req.user.orderCheck(productId,orderd)
@@ -250,7 +256,8 @@ exports.cartOrderd=(req,res,next)=>{ // orderd or not check해주기 --> order �
     })
 }
 
-exports.getSearch=(req,res,next)=>{ // 상품 찾기 
+// Product title로 Product 찾기 
+exports.getSearch=(req,res,next)=>{ 
     const searchWord = req.query.searchWord;
     console.log(searchWord);
     let pageNum=1;
@@ -277,18 +284,22 @@ exports.getSearch=(req,res,next)=>{ // 상품 찾기
             lastPage: Math.ceil(totalItems/POST_PER_PAGE) //마지막 페이지 
         })
         })
-    .catch(err =>console.log(err));
+    .catch(err =>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 }
 
 
-exports.postAddReview=(req,res,next)=>{ // 리뷰 추가 
+// 리뷰 추가 리퀘스트 
+exports.postAddReview=(req,res,next)=>{ 
     const productId = req.body.productId;
     const title = req.body.title;
     const contents = req.body.contents;
     const user_id = req.user._id;
     const addedTime = Date.now();
     const error = validationResult(req);
-    console.log(error);
     if(!error.isEmpty()){
         return res.status(422).redirect('/products/'+productId); // 에러 처리 나중에 수정 필요 
     }
@@ -301,12 +312,17 @@ exports.postAddReview=(req,res,next)=>{ // 리뷰 추가
         console.log(result);
         res.redirect('/products/'+productId);
     })
-    .catch(err=>next(err));
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
     
 }
 
 
-exports.deleteReview = (req,res,next)=>{ // 리뷰 삭제함수 
+ // 리뷰 삭제 리퀘스트 
+exports.deleteReview = (req,res,next)=>{
     const ProductId = req.params.productId;
     Product.findById(ProductId)
     .then(product=>{
@@ -316,6 +332,5 @@ exports.deleteReview = (req,res,next)=>{ // 리뷰 삭제함수
         res.status(200).json({message:'succeed'});
     })
     .catch(err=>{res.status(500).json({message:'fail'})
-    console.log(err);
 });
 }
